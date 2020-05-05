@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include "common.h"
 
 // TODO aggiustare input da stdin perchè gets è pericolosa
 // se in scelta metti un carattere scoppia tutto 
@@ -26,7 +27,13 @@ int main(int argc, char *argv[])
 
 
     if(argc == 1)
-    {
+    {   
+        char buffer[128];
+        char *parole[10];
+        printf("non hai inserito nessun file, per continuare perfavore aggiungine almeno uno: \n");
+        readline(1,buffer, 128 );
+        printf("%s \n", buffer);
+
 
     }else
     {
@@ -83,7 +90,6 @@ int scelta(int *p, int*q, char **files, int *nfile)
         case 6: quit = 0; break;
         default: printf("errore num errato");
     }       
-    printf(" !!!il file è %s \n", files[*nfile]); 
     return  quit;
 }
 
@@ -91,21 +97,12 @@ int scelta(int *p, int*q, char **files, int *nfile)
 void addFiles(char *files[], int *nfile)
 {    
     char *file = malloc(100 * sizeof(char));
-    printf(" nfile = %d \n", *nfile);
     printf("inserire il nome del file da aggiungere : ");
     scanf("%s", file);
-    printf(" il file è %s \n", file);
 
     ++(*nfile);
     files[*nfile-1] = file;
-    printf(" !!!il file è %s \n", files[*nfile]);  
-
-   // strcpy(files[*nfile], file);
-    //strcpy(files[++(*nfile)], file);
     
-   // files[(*nfile)] = "pipponw";
-   //strcpy(files[*nfile-1], file);
-    //strcpy(files[a], file);
     
 }
 
@@ -135,4 +132,5 @@ void stampaReport()
 {
     //capire come vogliamo formattare il report 
 }
+
 
