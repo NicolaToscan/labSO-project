@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 int readline(int file, char *buffer, int maxsize)
 {
 	int i = 0;
