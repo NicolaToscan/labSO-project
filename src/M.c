@@ -3,9 +3,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+
 // TODO aggiustare input da stdin perchè gets è pericolosa
 // se in scelta metti un carattere scoppia tutto 
-#define MAXFILESIZE 128
+#define MAXNFILES 128
 
 void doReport(char **files, int nfile);
 void stampaReport();
@@ -20,7 +21,7 @@ void ll(){
 
 int main(int argc, char *argv[])
 {
-    char *files[100];
+    char *files[MAXNFILES];
     int nfile = 0, p, q;
 
 
@@ -43,7 +44,6 @@ int main(int argc, char *argv[])
 
     while(scelta(&p, &q, files, &nfile));
          
-
     return 0;
 
 }
@@ -83,28 +83,36 @@ int scelta(int *p, int*q, char **files, int *nfile)
         case 6: quit = 0; break;
         default: printf("errore num errato");
     }       
-
+    printf(" !!!il file è %s \n", files[*nfile]); 
     return  quit;
 }
 
 // prendere file dall'utente 
 void addFiles(char *files[], int *nfile)
 {    
-    char file[20] = "" ;
+    char *file = malloc(100 * sizeof(char));
+    printf(" nfile = %d \n", *nfile);
     printf("inserire il nome del file da aggiungere : ");
     scanf("%s", file);
-   // printf("ecco %s \n", file);
-   
-    ++(*nfile);
-    strcpy(files[*nfile-1], "pippo");
-             
+    printf(" il file è %s \n", file);
 
+    ++(*nfile);
+    files[*nfile-1] = file;
+    printf(" !!!il file è %s \n", files[*nfile]);  
+
+   // strcpy(files[*nfile], file);
+    //strcpy(files[++(*nfile)], file);
+    
+   // files[(*nfile)] = "pipponw";
+   //strcpy(files[*nfile-1], file);
+    //strcpy(files[a], file);
     
 }
 
 
 void viewFiles(char **files, int *nfile)
 {
+    printf(" View il file è %s \n", files[*nfile]);
     int i ;
     printf("il numero di file è %d \n", *nfile);
     for (i = 0; i < *nfile; i++)
