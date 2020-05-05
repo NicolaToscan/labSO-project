@@ -1,6 +1,14 @@
-#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
 #include "common.h"
+
+void error(char msg[])
+{
+	fprintf(stderr, "\033[31;1m ERROR: %s \033[0m\n", msg);
+}
 
 int readline(const int file, char *buffer, const int maxsize)
 {
@@ -39,11 +47,6 @@ int readNumber(int file)
 	}
 
 	return atoi(number);
-}
-
-void error(char msg[])
-{
-	fprintf(stderr, "\033[31;1m ERROR: %s \033[0m\n", msg);
 }
 
 Analysis initAnalysis()

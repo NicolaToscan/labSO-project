@@ -10,17 +10,17 @@ typedef struct Analysis_s
 } Analysis;
 
 
-#define Q_FILE_COMMAND 'F'
-#define Q_NUMBER_OF_SECTIONS_COMMAND 'M'
-#define Q_MY_SECTION_COMMAND 'N'
-#define Q_QUIT_COMMAND 'Q'
+#define COMMAND_FILE 'F'
+#define COMMAND_NR_SECTION 'M'
+#define COMMAND_SECTION 'N'
+#define COMMAND_QUIT 'Q'
 
 #define MAX_FILENAME_LENGHT 1024
 
 
+void error(char msg[]);
 int readline(const int file, char *buffer, const int maxsize);
 char readFirstChar(const int file);
-void error(char msg[]);
 int readNumber(int file);
 Analysis initAnalysis();
 void printAnalysis(Analysis *a);
