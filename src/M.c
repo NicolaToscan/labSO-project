@@ -57,7 +57,6 @@ int main(int argc, char *argv[])
 	return 0;
 
 }
-
 int askp(int *p)
 {    
 	printf("ora dimmi il numero di gruppi di file (p) \n");
@@ -68,12 +67,10 @@ int askq(int *q)
 	printf("e il numero di pezzi in cui devo suddividere il file (q)?\n");
 	scanf("%d", q);
 }
-
 int scelta(int *p, int*q, char **files, int *nfile)
 {
-	int scelta;
+	char *scelta;
 	int quit = 1;
-	printf("nfile: %d", *nfile);
 	printf("ecco la lista delle azioni che puoi fare:\n");
 	printf("1) aggiungi un file \n");
 	printf("2) visualizza file \n");
@@ -82,18 +79,22 @@ int scelta(int *p, int*q, char **files, int *nfile)
 	printf("5) calcola report \n");
 	printf("6) chiudi\n");
 	printf("inserire il numero dell'operazione desiderata : ");
-	scanf("%d", &scelta );
-	
-	switch (scelta)
-	{
-		case 1: addFiles(files, nfile) ; break;
-		case 2: viewFiles(files, nfile); break;
-		case 3: askp(p); break;
-		case 4: askq(q); break;
-		case 5: doReport(files, *nfile) ; break;
-		case 6: quit = 0; break;
-		default: printf("errore num errato");
-	}       
+	ll();
+	read(1, scelta, 1);
+	printf("%c", *scelta);
+		switch (*scelta)
+		{
+			case '1': addFiles(files, nfile) ; break;
+			case '2': viewFiles(files, nfile); break; // non va 
+			case '3': askp(p); break;
+			case '4': askq(q); break;
+			case '5': doReport(files, *nfile) ; break; // non va 
+			case '6': quit = 0; break;
+			default: error("errore num errato");
+		}
+
+		
+	   
 	return  quit;
 }
 
@@ -111,8 +112,6 @@ void addFiles(char *files[], int *nfile)
 		error(" file not found");
 		free(file);
 	}
-
-	
 	
 }
 
@@ -130,15 +129,11 @@ void viewFiles(char **files, int *nfile)
 }
 
 int checkFile(char *file){
-	int fd = open(file, O_RDONLY);
-	
-	return (fd < 0) ? 0:1;
+	return (open(file, O_RDONLY) < 0) ? 0:1;
 }
 //chiama analyzer e gli passa files
 void doReport(char **files, int nfile)
 {
-	
-
 	stampaReport();
 }
 
