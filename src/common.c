@@ -5,9 +5,18 @@
 #include <string.h>
 #include "common.h"
 
+void errorKillAll(const int errCode)
+{
+}
+
 void error(char msg[])
 {
 	fprintf(stderr, "\033[31;1m ERROR: %s \033[0m\n", msg);
+}
+
+void logg(char msg[])
+{
+	fprintf(stderr, "\033[32;1m LOG: %s \033[0m\n", msg);
 }
 
 int readline(const int file, char *buffer, const int maxsize)
@@ -37,7 +46,7 @@ char readFirstChar(const int file)
 	return CH[0];
 }
 
-int readNumber(int file)
+int readNumber(const int file)
 {
 	char number[10];
 	if (readline(file, number, 10) == -1)
@@ -70,10 +79,9 @@ void printAnalysis(Analysis *a)
 			a->punctuaction,
 			a->spaces,
 			a->tot);
-
 }
 
-Analysis readAnalysis(int file)
+Analysis readAnalysis(const int file)
 {
 	char buffer[60];
 	readline(file, buffer, 60);
@@ -88,4 +96,31 @@ Analysis readAnalysis(int file)
 	a.punctuaction = strtol(pEnd, NULL, 10);
 
 	return a;
+}
+
+Analysis sumAnalysis(Analysis a, Analysis b)
+{
+	a.letters += b.letters;
+	a.numbers += b.numbers;
+	a.other += b.other;
+	a.punctuaction += b.punctuaction;
+	a.spaces += b.spaces;
+	a.tot += b.tot;
+}
+
+void sendCommand(const int file, char *cmd)
+{
+	write(file, cmd, strlen(cmd));
+	write(file, '\n', 1);
+}
+void sendIntCommand(const int file, const int cmd)
+{
+	char buff[11];
+	sprintf(buff, "%d\n", cmd);
+	write(file, buff, strlen(buff));
+}
+void sendCharCommand(const int file, const char cmd)
+{
+	char buff[3] = {cmd, '\n', '\0'};
+	write(file, buff, strlen(buff));
 }

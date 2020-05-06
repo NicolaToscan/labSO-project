@@ -102,4 +102,6 @@ void analyseFiles(int numberOfFiles, Analysis *a)
 
 		close(fd);
 	}
+
+	logg("File analysed");
 }

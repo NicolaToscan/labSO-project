@@ -9,10 +9,32 @@
 #define INPUT_FILE STDIN_FILENO
 #define OUTPUT_FILE STDOUT_FILENO
 
+#define WRITE_INDEX 0
+#define READ_INDEX 1
+#define PID_INDEX 2
+
+typedef struct QData_s
+{
+	int write;
+	int read;
+	int pid;
+
+} QData;
+
+QData *resizeQs(const int newN, int *nCurr, QData *Q) void killQ(const int WRITE, const int READ);
+void resetQ(const int WRITE, const int READ, const int section, const int sections);
+void startQ(QData *qData, const int section, const int sections);
+void forwardFile(int numberOfFiles, QData *Q, int qLen);
+void returnResult(QData *Q, int qLen);
+
 int main(int argc, char *argv[])
 {
 	int sections = 1;
 	int nrOfFile;
+	int currentQs = 1;
+	QData *Q = calloc(currentQs, sizeof(QData));
+
+	startQ(Q, 1, 1);
 
 	while (1)
 	{
@@ -22,10 +44,13 @@ int main(int argc, char *argv[])
 
 		case COMMAND_FILE:
 			nrOfFile = readNumberOfFiles(INPUT_FILE);
+			forwardFile(nrOfFile, Q, currentQs);
+			returnResult(Q, currentQs);
 			break;
 
 		case COMMAND_NR_SECTION:
 			sections = readSectionNumber(INPUT_FILE);
+			Q = resizeQs(sections, &currentQs, Q);
 			break;
 
 		case COMMAND_QUIT:
@@ -39,4 +64,135 @@ int main(int argc, char *argv[])
 	}
 
 	return 0;
+}
+
+QData *resizeQs(const int newN, int *nCurr, QData *Q)
+{
+	if (newN == *nCurr)
+		return;
+
+	QData *newQ = (QData *)calloc(newN, sizeof(QData));
+
+	int toCopy = newN < *nCurr ? newN : *nCurr;
+	int i = 0;
+	for (i = 0; i < toCopy; i++)
+	{
+		newQ[i].read = Q[i].read;
+		newQ[i].write = Q[i].write;
+		newQ[i].pid = Q[i].pid;
+		resetQ(newQ[i].read, newQ[i].write, i + 1, newN);
+	}
+
+	if (newN > *nCurr)
+	{
+		for (; i < newN; i++)
+			startQ(newQ + i, i + 1, newN);
+	}
+	else //(n < nCurr)
+	{
+		for (; i < *nCurr; i++)
+			killQ(Q[i].read, Q[i].write);
+	}
+
+	free(Q);
+	*nCurr = newN;
+	return newQ;
+}
+
+void killQ(const int WRITE, const int READ)
+{
+	char buff[2] = {COMMAND_QUIT, '\n'};
+	write(WRITE, buff, 2);
+	//TODO close pipe
+}
+
+void resetQ(const int WRITE, const int READ, const int section, const int sections)
+{
+	if (section > sections)
+	{
+		error("Index bigger that range");
+		errorKillAll(ERR_CO_OUTOFRANGE);
+		exit(ERR_CO_OUTOFRANGE);
+	}
+
+	sendCharCommand(WRITE, COMMAND_NR_SECTION);
+	sendIntCommand(WRITE, sections);
+	sendCharCommand(WRITE, COMMAND_SECTION);
+	sendIntCommand(WRITE, section);
+}
+
+void startQ(QData *qData, const int section, const int sections)
+{
+	int WRITE = 1;
+	int READ = 0;
+
+	int fdIN[2];
+	pipe(fdIN);
+	qData->write = fdIN[WRITE];
+
+	int fdOUT[2];
+	pipe(fdOUT);
+	qData->read = fdOUT[READ];
+
+	pid_t pid = fork();
+	if (pid > 0) //Parent
+	{
+		qData->pid = pid;
+		resetQ(qData->write, qData->read, section, sections);
+	}
+	else if (pid == 0) //Child
+	{
+		dup2(fdIN[READ], STDIN_FILENO);
+		dup2(fdOUT[WRITE], STDOUT_FILENO);
+
+		if (execlp(FILENAME_Q, FILENAME_Q, (char *)NULL) < 0)
+		{
+			//TODO: handle exec error
+			error("EXEC error");
+		}
+		logg("HOLA");
+	}
+	else
+	{
+		//TODO: handle fork error
+		error("FORK error");
+	}
+}
+
+void forwardFile(int numberOfFiles, QData *Q, int qLen)
+{
+	char fileName[MAX_FILENAME_LENGHT];
+
+	char numberOfFilesStr[10];
+	sprintf(nr, "%d", numberOfFiles);
+	int j = 0;
+	for (j = 0; j < qLen; j++)
+	{
+		sendCommand(Q[qLen].write, "F");
+		sendCommand(Q[qLen].write, numberOfFilesStr);
+	}
+
+	int i = 0;
+	for (i = 0; i < numberOfFiles; i++)
+	{
+		int nr = readFileName(INPUT_FILE, fileName, MAX_FILENAME_LENGHT);
+		if (nr < 0)
+			continue;
+
+		int j = 0;
+		for (j = 0; j < qLen; j++)
+		{
+			sendCommand(Q[qLen].write, fileName);
+		}
+	}
+}
+
+void returnResult(QData *Q, int qLen)
+{
+	Analysis a = initAnalysis();
+	int i = 0;
+	for (i = 0; i < qLen; i++)
+		sumAnalysis(a, readAnalysis(Q[i].read));
+
+	printAnalysis(a);
 }

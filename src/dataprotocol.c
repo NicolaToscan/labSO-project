@@ -25,12 +25,15 @@ int readSectionNumber(int file)
 		return 1;
 	}
 
+	fprintf(stderr, "Sec nr: %d\n", M);
+
 	return M;
 }
 
 int readMySection(int file, int max)
 {
 	int N = readNumber(file);
+	fprintf(stderr, "Sec my nr: %d\n", N);
 	if (N <= 0)
 	{
 		error("Number not valid");
