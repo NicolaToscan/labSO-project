@@ -5,9 +5,13 @@
 #include <string.h>
 #include "common.h"
 
-// TODO aggiustare input da stdin perchè gets è pericolosa
-// se in scelta metti un carattere scoppia tutto 
 #define MAXNFILES 128
+#define ADD_FILES '1'
+#define VIEW_FILES '2'
+#define EDIT_P '3'
+#define EDIT_Q '4'
+#define REPORT '5'
+#define QUIT '6'
 
 void doReport(char **files, int nfile);
 void stampaReport();
@@ -21,6 +25,7 @@ void ll(){
 	printf("\n");
 }
 
+
 int main(int argc, char *argv[])
 {
 	char *files[MAXNFILES];
@@ -33,8 +38,7 @@ int main(int argc, char *argv[])
 		char *parole[10];
 		printf("non hai inserito nessun file, per continuare perfavore aggiungine almeno uno: \n");
 		readline(1,buffer, 128 );
-		printf("%s \n", buffer);
-
+		
 
 	}else
 	{
@@ -81,15 +85,15 @@ int scelta(int *p, int*q, char **files, int *nfile)
 	printf("inserire il numero dell'operazione desiderata : ");
 	ll();
 	read(1, scelta, 1);
-	printf("%c", *scelta);
-		switch (*scelta)
+	printf(" N = %s \n", scelta);
+		switch (scelta[0])
 		{
-			case '1': addFiles(files, nfile) ; break;
-			case '2': viewFiles(files, nfile); break; // non va 
-			case '3': askp(p); break;
-			case '4': askq(q); break;
-			case '5': doReport(files, *nfile) ; break; // non va 
-			case '6': quit = 0; break;
+			case ADD_FILES: addFiles(files, nfile) ; break;
+			case VIEW_FILES: viewFiles(files, nfile); break; // non va 
+			case EDIT_P: askp(p); break;
+			case EDIT_Q: askq(q); break;
+			case REPORT: doReport(files, *nfile) ; break; // non va 
+			case QUIT: quit = 0; break;
 			default: error("errore num errato");
 		}
 
