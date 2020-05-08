@@ -28,12 +28,13 @@ typedef struct Analysis_s
 
 void errorKillAll(const int errCode);
 void error(char msg[]);
+void loggN(int n);
 void logg(char msg[]);
 int readline(const int file, char *buffer, const int maxsize);
 char readFirstChar(const int file);
 int readNumber(const int file);
 Analysis initAnalysis();
-void printAnalysis(Analysis *a);
+void printAnalysis(Analysis a);
 Analysis readAnalysis(const int file);
 Analysis sumAnalysis(Analysis a, Analysis b);
 void sendCommand(const int file, char *cmd);

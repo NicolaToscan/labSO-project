@@ -19,6 +19,11 @@ void logg(char msg[])
 	fprintf(stderr, "\033[32;1m LOG: %s \033[0m\n", msg);
 }
 
+void loggN(int n)
+{
+	fprintf(stderr, "\033[32;1m LOG: %d \033[0m\n", n);
+}
+
 int readline(const int file, char *buffer, const int maxsize)
 {
 	int i = 0;
@@ -70,15 +75,15 @@ Analysis initAnalysis()
 	return a;
 }
 
-void printAnalysis(Analysis *a)
+void printAnalysis(Analysis a)
 {
 	fprintf(stdout, "%d %d %d %d %d %d\n",
-			a->letters,
-			a->numbers,
-			a->other,
-			a->punctuaction,
-			a->spaces,
-			a->tot);
+			a.letters,
+			a.numbers,
+			a.other,
+			a.punctuaction,
+			a.spaces,
+			a.tot);
 }
 
 Analysis readAnalysis(const int file)
@@ -111,7 +116,7 @@ Analysis sumAnalysis(Analysis a, Analysis b)
 void sendCommand(const int file, char *cmd)
 {
 	write(file, cmd, strlen(cmd));
-	write(file, '\n', 1);
+	write(file, "\n", strlen("\n"));
 }
 void sendIntCommand(const int file, const int cmd)
 {
