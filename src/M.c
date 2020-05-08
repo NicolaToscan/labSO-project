@@ -105,16 +105,16 @@ int scelta(int *p, int*q, char **files, int *nfile)
 // prendere file dall'utente 
 void addFiles(char *files[], int *nfile)
 {    
-	char *file = malloc(100 * sizeof(char));
+	char file[MAX_FILENAME_LENGHT];
 	printf("inserire il nome del file da aggiungere : ");
-	scanf("%s", file);
+	readline(stdout, file, MAX_FILENAME_LENGHT);
+
 	if(checkFile(file))
 	{
 		++(*nfile);
 		files[*nfile-1] = file;
 	}else{
 		error(" file not found");
-		free(file);
 	}
 	
 }
