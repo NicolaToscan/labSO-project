@@ -111,6 +111,7 @@ Analysis sumAnalysis(Analysis a, Analysis b)
 	a.punctuaction += b.punctuaction;
 	a.spaces += b.spaces;
 	a.tot += b.tot;
+	return a;
 }
 
 void sendCommand(const int file, char *cmd)

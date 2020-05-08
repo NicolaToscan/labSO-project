@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
 	int sections = 1;
 	int mySection = 1;
 	int nrOfFile;
+	logg("Q started");
+	loggN(STDIN_FILENO);
+	loggN(STDOUT_FILENO);
 
 	while (1)
 	{
@@ -28,7 +31,7 @@ int main(int argc, char *argv[])
 			nrOfFile = readNumberOfFiles(INPUT_FILE);
 			Analysis a = initAnalysis();
 			analyseFiles(nrOfFile, &a);
-			printAnalysis(&a);
+			printAnalysis(a);
 			break;
 
 		case COMMAND_NR_SECTION:
@@ -102,6 +105,6 @@ void analyseFiles(int numberOfFiles, Analysis *a)
 
 		close(fd);
 	}
-
+	
 	logg("File analysed");
 }

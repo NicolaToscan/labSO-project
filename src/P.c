@@ -21,7 +21,8 @@ typedef struct QData_s
 
 } QData;
 
-QData *resizeQs(const int newN, int *nCurr, QData *Q) void killQ(const int WRITE, const int READ);
+QData *resizeQs(const int newN, int *nCurr, QData *Q);
+void killQ(const int WRITE, const int READ);
 void resetQ(const int WRITE, const int READ, const int section, const int sections);
 void startQ(QData *qData, const int section, const int sections);
 void forwardFile(int numberOfFiles, QData *Q, int qLen);
@@ -69,7 +70,7 @@ int main(int argc, char *argv[])
 QData *resizeQs(const int newN, int *nCurr, QData *Q)
 {
 	if (newN == *nCurr)
-		return;
+		return Q;
 
 	QData *newQ = (QData *)calloc(newN, sizeof(QData));
 
@@ -126,31 +127,38 @@ void startQ(QData *qData, const int section, const int sections)
 	int WRITE = 1;
 	int READ = 0;
 
-	int fdIN[2];
-	pipe(fdIN);
-	qData->write = fdIN[WRITE];
+	int fdDOWN[2];
+	pipe(fdDOWN);
+	qData->write = fdDOWN[WRITE];
 
-	int fdOUT[2];
-	pipe(fdOUT);
-	qData->read = fdOUT[READ];
+	int fdUP[2];
+	pipe(fdUP);
+	qData->read = fdUP[READ];
 
 	pid_t pid = fork();
 	if (pid > 0) //Parent
 	{
 		qData->pid = pid;
+		close(fdDOWN[READ]);
+		close(fdUP[WRITE]);
 		resetQ(qData->write, qData->read, section, sections);
 	}
 	else if (pid == 0) //Child
 	{
-		dup2(fdIN[READ], STDIN_FILENO);
-		dup2(fdOUT[WRITE], STDOUT_FILENO);
+		close(fdDOWN[WRITE]);
+		close(fdUP[READ]);
+
+		dup2(fdDOWN[READ], STDIN_FILENO);
+		dup2(fdUP[WRITE], STDOUT_FILENO);
+
+		//close(fdDOWN[READ]);
+		//close(fdUP[WRITE]);
 
 		if (execlp(FILENAME_Q, FILENAME_Q, (char *)NULL) < 0)
 		{
 			//TODO: handle exec error
 			error("EXEC error");
 		}
-		logg("HOLA");
 	}
 	else
 	{
@@ -163,13 +171,12 @@ void forwardFile(int numberOfFiles, QData *Q, int qLen)
 {
 	char fileName[MAX_FILENAME_LENGHT];
 
-	char numberOfFilesStr[10];
-	sprintf(nr, "%d", numberOfFiles);
 	int j = 0;
 	for (j = 0; j < qLen; j++)
 	{
-		sendCommand(Q[qLen].write, "F");
-		sendCommand(Q[qLen].write, numberOfFilesStr);
+		sendCommand(Q[j].write, "F");
+		sendCommand(Q[j].write, "1");
+		//sendIntCommand(Q[j].write, numberOfFiles);
 	}
 
 	int i = 0;
@@ -182,7 +189,7 @@ void forwardFile(int numberOfFiles, QData *Q, int qLen)
 		int j = 0;
 		for (j = 0; j < qLen; j++)
 		{
-			sendCommand(Q[qLen].write, fileName);
+			sendCommand(Q[j].write, fileName);
 		}
 	}
 }
@@ -191,8 +198,12 @@ void returnResult(QData *Q, int qLen)
 {
 	Analysis a = initAnalysis();
 	int i = 0;
-	for (i = 0; i < qLen; i++)
-		sumAnalysis(a, readAnalysis(Q[i].read));
+	for (i = 0; i < qLen; i++) {
+		char buf[100];
+		readline(Q[i].read, buf, 100);
+		Analysis b = readAnalysis(Q[i].read);
+		sumAnalysis(a, b);
+	}
 
 	printAnalysis(a);
 }
