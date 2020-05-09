@@ -6,12 +6,7 @@
 #include "common.h"
 
 #define MAXNFILES 128
-#define ADD_FILES '1'
-#define VIEW_FILES '2'
-#define EDIT_P '3'
-#define EDIT_Q '4'
-#define REPORT '5'
-#define QUIT '6'
+
 
 void doReport(char **files, int nfile);
 void stampaReport();
@@ -31,27 +26,16 @@ int main(int argc, char *argv[])
 	char *files[MAXNFILES];
 	int nfile = 0, p, q;
 
-
-	if(argc == 1)
-	{   
-		char buffer[128];
-		char *parole[10];
-		printf("non hai inserito nessun file, per continuare perfavore aggiungine almeno uno: \n");
-		readline(1,buffer, 128 );
-		
-
-	}else
-	{
-		int i;
-		for ( i = 0; i < argc-1; i++)     // tutti i file passati 
-		{    
-			if(checkFile(argv[i+1])){
-				files[i] = argv[i+1];
-				nfile ++;
-			}
+	int i;
+	for ( i = 0; i < argc-1; i++)     
+	{    
+		if(checkFile(argv[i+1])){
+			files[i] = argv[i+1];
+			nfile ++;
 		}
-		
 	}
+		
+	
 	printf("mi hai dato %d file validi ", nfile);
 	askp(&p);
 	askq(&q);
@@ -65,15 +49,17 @@ int askp(int *p)
 {    
 	printf("ora dimmi il numero di gruppi di file (p) \n");
 	scanf("%d", p);
+	printf("p adesso vale %d\n", *p );
 }
 int askq(int *q)
 {
-	printf("e il numero di pezzi in cui devo suddividere il file (q)?\n");
+	printf("dimmi il numero di pezzi in cui devo suddividere il file (q)?\n");
 	scanf("%d", q);
+	printf("q adesso vale %d\n", *q);
 }
-int scelta(int *p, int*q, char **files, int *nfile)
+int scelta(int *p, int *q, char **files, int *nfile)
 {
-	char *scelta;
+	char scelta;
 	int quit = 1;
 	printf("ecco la lista delle azioni che puoi fare:\n");
 	printf("1) aggiungi un file \n");
@@ -84,9 +70,9 @@ int scelta(int *p, int*q, char **files, int *nfile)
 	printf("6) chiudi\n");
 	printf("inserire il numero dell'operazione desiderata : ");
 	ll();
-	read(1, scelta, 1);
-	printf(" N = %s \n", scelta);
-		switch (scelta[0])
+	scelta = readFirstChar(STDIN_FILENO);
+	
+		switch (scelta)
 		{
 			case ADD_FILES: addFiles(files, nfile) ; break;
 			case VIEW_FILES: viewFiles(files, nfile); break; // non va 
@@ -107,28 +93,33 @@ void addFiles(char *files[], int *nfile)
 {    
 	char file[MAX_FILENAME_LENGHT];
 	printf("inserire il nome del file da aggiungere : ");
-	readline(stdout, file, MAX_FILENAME_LENGHT);
+	scanf("%s", file);
 
 	if(checkFile(file))
 	{
 		++(*nfile);
 		files[*nfile-1] = file;
+		logg("file aggiunto ");
 	}else{
 		error(" file not found");
 	}
+	
 	
 }
 
 
 void viewFiles(char **files, int *nfile)
 {
-	
-	int i ;
-	for (i = 0; i < *nfile; i++)
-	{
-		printf("%s \n", files[i]);  
+	if( *nfile>0){
+		int i ;
+		for (i = 0; i < *nfile; i++)
+		{
+			printf("%s \n", files[i]);  
+		}
+		ll();
+	}else{
+		printf("nessun file è stato aggiunto\n");
 	}
-	ll();
 	
 }
 
@@ -138,6 +129,27 @@ int checkFile(char *file){
 //chiama analyzer e gli passa files
 void doReport(char **files, int nfile)
 {
+	const int WRITE = 1;
+	const int READ = 0;
+	int fd[2];
+	pipe(fd);
+
+	pid_t pid = fork();
+	if(pid > 0 ) // parent
+	{
+		close(fd[READ]);
+	}else if(pid == 0){ // child
+		close(fd[WRITE]) ;
+
+		if(execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0){
+			error("EXEC error");
+		}
+	}else{
+		error("FORK error");
+	}
+
+	sendCommand(FILENAME_A, "ciao pipe");
+
 	stampaReport();
 }
 
