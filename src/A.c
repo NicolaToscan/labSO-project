@@ -7,9 +7,17 @@
 
 
 int main(){
-    char parola[50];
-    readline(STDIN_FILENO, parola, 50);
+    char cmd[50];
     logg("eccomi");
-    printf("parola = %s\n", parola);
+    
+    while(1)
+    {
+        readline(STDIN_FILENO, cmd, 50);
+        logg(cmd);
+    }
+   
+    
+
     return 0;
+
 }

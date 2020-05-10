@@ -16,10 +16,10 @@ int scelta(int *p, int *q, char **files, int *nfile);
 int askp(int *p);
 int askq(int *q);
 int checkFile(char *file);
-void ll(){
-	printf("\n");
-}
+void ll(){printf("\n");}
+void startA();
 
+int fd[2];
 
 int main(int argc, char *argv[])
 {
@@ -35,11 +35,11 @@ int main(int argc, char *argv[])
 		}
 	}
 		
-	
+	startA();
 	printf("mi hai dato %d file validi ", nfile);
 	askp(&p);
 	askq(&q);
-
+	
 	while(scelta(&p, &q, files, &nfile));
 		 
 	return 0;
@@ -48,13 +48,15 @@ int main(int argc, char *argv[])
 int askp(int *p)
 {    
 	printf("ora dimmi il numero di gruppi di file (p) \n");
-	scanf("%d", p);
+	*p = readNumber(STDIN_FILENO);
+	sendIntCommand(fd[1], *p);
 	printf("p adesso vale %d\n", *p );
 }
 int askq(int *q)
 {
 	printf("dimmi il numero di pezzi in cui devo suddividere il file (q)?\n");
-	scanf("%d", q);
+	*q = readNumber(STDIN_FILENO);
+	sendIntCommand(fd[1], *q);
 	printf("q adesso vale %d\n", *q);
 }
 int scelta(int *p, int *q, char **files, int *nfile)
@@ -72,19 +74,20 @@ int scelta(int *p, int *q, char **files, int *nfile)
 	ll();
 	scelta = readFirstChar(STDIN_FILENO);
 	
-		switch (scelta)
-		{
-			case ADD_FILES: addFiles(files, nfile) ; break;
-			case VIEW_FILES: viewFiles(files, nfile); break; // non va 
-			case EDIT_P: askp(p); break;
-			case EDIT_Q: askq(q); break;
-			case REPORT: doReport(files, *nfile) ; break; // non va 
-			case QUIT: quit = 0; break;
-			default: error("errore num errato");
-		}
+
+	switch (scelta)
+	{
+		case ADD_FILES: addFiles(files, nfile) ; break;
+		case VIEW_FILES: viewFiles(files, nfile); break; 
+		case EDIT_P: askp(p); break;
+		case EDIT_Q: askq(q); break;
+		case REPORT: doReport(files, *nfile) ; break;
+		case QUIT: quit = 0; break;
+		default: error("errore num errato");
+	}
 
 		
-	   
+
 	return  quit;
 }
 
@@ -92,14 +95,15 @@ int scelta(int *p, int *q, char **files, int *nfile)
 void addFiles(char *files[], int *nfile)
 {    
 	char file[MAX_FILENAME_LENGHT];
-	printf("inserire il nome del file da aggiungere : ");
-	scanf("%s", file);
+	printf("inserire il nome del file da aggiungere : \n");
+	readline(STDIN_FILENO, file, MAX_FILENAME_LENGHT);
 
 	if(checkFile(file))
 	{
 		++(*nfile);
 		files[*nfile-1] = file;
-		logg("file aggiunto ");
+		logg("file aggiunto");
+		sendCommand(fd[1], file); // invia il file ad A
 	}else{
 		error(" file not found");
 	}
@@ -129,26 +133,7 @@ int checkFile(char *file){
 //chiama analyzer e gli passa files
 void doReport(char **files, int nfile)
 {
-	const int WRITE = 1;
-	const int READ = 0;
-	int fd[2];
-	pipe(fd);
-
-	pid_t pid = fork();
-	if(pid > 0 ) // parent
-	{
-		close(fd[READ]);
-	}else if(pid == 0){ // child
-		close(fd[WRITE]) ;
-
-		if(execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0){
-			error("EXEC error");
-		}
-	}else{
-		error("FORK error");
-	}
-
-	sendCommand(FILENAME_A, "ciao pipe");
+	
 
 	stampaReport();
 }
@@ -158,4 +143,27 @@ void stampaReport()
 	//capire come vogliamo formattare il report 
 }
 
+void startA(){
+	const int WRITE = 1;
+	const int READ = 0;
+
+	pipe(fd);
+	
+	pid_t pid = fork();
+	if(pid > 0 ) // parent
+	{
+		close(fd[READ]);
+		logg("mi blocco");
+		
+	}else if(pid == 0){ // child
+
+		close(fd[WRITE]) ;
+		dup2(fd[0], STDIN_FILENO); // adesso il figlio ha come standard input l'estremità della pipe
+		if(execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0){
+			error("EXEC error");
+		}
+	}else{
+		error("FORK error");
+	}
+}
 
