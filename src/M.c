@@ -15,7 +15,7 @@ void addFiles(char *files[], int *nfile);
 int scelta(int *p, int *q, char **files, int *nfile);
 int askp(int *p);
 int askq(int *q);
-int checkFile(char *file);
+
 void ll(){printf("\n");}
 void startA();
 
@@ -25,23 +25,22 @@ int main(int argc, char *argv[])
 {
 	char *files[MAXNFILES];
 	int nfile = 0, p, q;
-
+	startA();
 	int i;
 	for ( i = 0; i < argc-1; i++)     
 	{    
-		if(checkFile(argv[i+1])){
-			files[i] = argv[i+1];
+		 	files[i] = argv[i+1];
 			nfile ++;
-		}
+			sendCharCommand(fd[1], 'A');
+			sendCommand(fd[1], files[i]); 	 
 	}
 		
-	startA();
+	
 	printf("mi hai dato %d file validi ", nfile);
 	askp(&p);
 	askq(&q);
 	
-	while(scelta(&p, &q, files, &nfile));
-		 
+	while(scelta(&p, &q, files, &nfile));	 
 	return 0;
 
 }
@@ -49,6 +48,7 @@ int askp(int *p)
 {    
 	printf("ora dimmi il numero di gruppi di file (p) \n");
 	*p = readNumber(STDIN_FILENO);
+	sendCharCommand(fd[1], 'P');
 	sendIntCommand(fd[1], *p);
 	printf("p adesso vale %d\n", *p );
 }
@@ -56,6 +56,7 @@ int askq(int *q)
 {
 	printf("dimmi il numero di pezzi in cui devo suddividere il file (q)?\n");
 	*q = readNumber(STDIN_FILENO);
+	sendCharCommand(fd[1], 'Q');
 	sendIntCommand(fd[1], *q);
 	printf("q adesso vale %d\n", *q);
 }
@@ -86,8 +87,6 @@ int scelta(int *p, int *q, char **files, int *nfile)
 		default: error("errore num errato");
 	}
 
-		
-
 	return  quit;
 }
 
@@ -98,15 +97,13 @@ void addFiles(char *files[], int *nfile)
 	printf("inserire il nome del file da aggiungere : \n");
 	readline(STDIN_FILENO, file, MAX_FILENAME_LENGHT);
 
-	if(checkFile(file))
-	{
-		++(*nfile);
-		files[*nfile-1] = file;
-		logg("file aggiunto");
-		sendCommand(fd[1], file); // invia il file ad A
-	}else{
-		error(" file not found");
-	}
+
+	++(*nfile);
+	files[*nfile-1] = file;
+	logg("file aggiunto");
+	sendCharCommand(fd[1], 'A');
+	sendCommand(fd[1], file); // invia il file ad A
+
 	
 	
 }
@@ -127,10 +124,8 @@ void viewFiles(char **files, int *nfile)
 	
 }
 
-int checkFile(char *file){
-	return (open(file, O_RDONLY) < 0) ? 0:1;
-}
-//chiama analyzer e gli passa files
+
+
 void doReport(char **files, int nfile)
 {
 	
@@ -153,7 +148,7 @@ void startA(){
 	if(pid > 0 ) // parent
 	{
 		close(fd[READ]);
-		logg("mi blocco");
+		
 		
 	}else if(pid == 0){ // child
 
