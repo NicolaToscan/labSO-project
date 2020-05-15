@@ -11,7 +11,7 @@
 void doReport(char **files, int nfile);
 void stampaReport();
 void viewFiles(char ** files, int *nfiles);
-void addFiles(char *files[], int *nfile);
+void addFiles( int *nfiles);
 int scelta(int *p, int *q, char **files, int *nfile);
 int askp(int *p);
 int askq(int *q);
@@ -19,7 +19,8 @@ int askq(int *q);
 void ll(){printf("\n");}
 void startA();
 
-int fd[2];
+int fdMtoA[2];
+int fdAtoM[2];
 
 int main(int argc, char *argv[])
 {
@@ -31,8 +32,8 @@ int main(int argc, char *argv[])
 	{    
 		 	files[i] = argv[i+1];
 			nfile ++;
-			sendCharCommand(fd[1], 'A');
-			sendCommand(fd[1], files[i]); 	 
+			sendCharCommand(fdMtoA[1], 'A');
+			sendCommand(fdMtoA[1], files[i]); 	 
 	}
 		
 	
@@ -48,16 +49,16 @@ int askp(int *p)
 {    
 	printf("ora dimmi il numero di gruppi di file (p) \n");
 	*p = readNumber(STDIN_FILENO);
-	sendCharCommand(fd[1], 'P');
-	sendIntCommand(fd[1], *p);
+	sendCharCommand(fdMtoA[1], 'P');
+	sendIntCommand(fdMtoA[1], *p);
 	printf("p adesso vale %d\n", *p );
 }
 int askq(int *q)
 {
 	printf("dimmi il numero di pezzi in cui devo suddividere il file (q)?\n");
 	*q = readNumber(STDIN_FILENO);
-	sendCharCommand(fd[1], 'Q');
-	sendIntCommand(fd[1], *q);
+	sendCharCommand(fdMtoA[1], 'Q');
+	sendIntCommand(fdMtoA[1], *q);
 	printf("q adesso vale %d\n", *q);
 }
 int scelta(int *p, int *q, char **files, int *nfile)
@@ -78,7 +79,7 @@ int scelta(int *p, int *q, char **files, int *nfile)
 
 	switch (scelta)
 	{
-		case ADD_FILES: addFiles(files, nfile) ; break;
+		case ADD_FILES: addFiles(nfile) ; break;
 		case VIEW_FILES: viewFiles(files, nfile); break; 
 		case EDIT_P: askp(p); break;
 		case EDIT_Q: askq(q); break;
@@ -91,18 +92,15 @@ int scelta(int *p, int *q, char **files, int *nfile)
 }
 
 // prendere file dall'utente 
-void addFiles(char *files[], int *nfile)
+void addFiles( int *nfiles)
 {    
 	char file[MAX_FILENAME_LENGHT];
 	printf("inserire il nome del file da aggiungere : \n");
 	readline(STDIN_FILENO, file, MAX_FILENAME_LENGHT);
 
-
-	++(*nfile);
-	files[*nfile-1] = file;
-	logg("file aggiunto");
-	sendCharCommand(fd[1], 'A');
-	sendCommand(fd[1], file); // invia il file ad A
+	//invia ad A
+	sendCharCommand(fdMtoA[1], 'A');
+	sendCommand(fdMtoA[1], file); 
 
 	
 	
@@ -111,16 +109,19 @@ void addFiles(char *files[], int *nfile)
 
 void viewFiles(char **files, int *nfile)
 {
-	if( *nfile>0){
-		int i ;
-		for (i = 0; i < *nfile; i++)
-		{
-			printf("%s \n", files[i]);  
-		}
-		ll();
-	}else{
-		printf("nessun file è stato aggiunto\n");
-	}
+	/*char file[MAX_FILENAME_LENGHT];
+	sendCharCommand(fdMtoA[1], 'V');
+	int i;
+	for ( i = 0; i < *nfile; i++)
+	{
+		readline(fdAtoM[0], file, MAX_FILENAME_LENGHT);
+		logg(file);
+		logg("M");
+	}*/
+	
+		
+	
+	
 	
 }
 
@@ -139,26 +140,32 @@ void stampaReport()
 }
 
 void startA(){
-	const int WRITE = 1;
-	const int READ = 0;
+ const int WRITE = 1;   // non è meglio un define?
+ const int READ = 0;
 
-	pipe(fd);
-	
-	pid_t pid = fork();
-	if(pid > 0 ) // parent
-	{
-		close(fd[READ]);
-		
-		
-	}else if(pid == 0){ // child
+ pipe(fdMtoA);
+ pipe(fdAtoM);
+ 
+ pid_t pid = fork();
+ if(pid > 0 ) // parent
+ {
+  close(fdMtoA[READ]);
+  close(fdAtoM[WRITE]);
 
-		close(fd[WRITE]) ;
-		dup2(fd[0], STDIN_FILENO); // adesso il figlio ha come standard input l'estremità della pipe
-		if(execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0){
-			error("EXEC error");
-		}
-	}else{
-		error("FORK error");
-	}
+   
+ }else if(pid == 0){ // child
+
+  close(fdMtoA[WRITE]) ;
+  close(fdAtoM[READ]);
+
+  dup2(fdMtoA[READ], STDIN_FILENO); // adesso il figlio ha come standard input l'estremità della pipe
+  dup2(fdAtoM[WRITE], STDOUT_FILENO); // il figlio ha come standard output M
+
+  if(execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0){
+   error("EXEC error");
+  }
+ }else{
+  error("FORK error");
+ }
 }
 

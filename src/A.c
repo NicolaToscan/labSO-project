@@ -8,17 +8,28 @@
 #define COMMAND_ADD 'A'
 #define COMMAND_SETP 'P'
 #define COMMAND_SETQ 'Q' // potrebbe fare interferenza col quit  
+#define COMMAND_VIEW 'V' 
 #define MAXNFILES 128
 
-void addFile(char *files[], int *nfile, char *filename);
+void addFile(char files[][MAX_FILENAME_LENGHT], int *nfile, char *filename);
 int checkFile(char *file);
+void view(char files[][MAX_FILENAME_LENGHT], int *nfile);
+
+stampa(char files[][MAX_FILENAME_LENGHT], int *nfile){
+    int i ;
+    for ( i = 0; i < *nfile; i++)
+    {
+        logg(files[i]);
+    }
+    
+}
 
 int main(){
     char fileName[MAX_FILENAME_LENGHT];
     int P ;
     int Q;
 
-    char *files[MAXNFILES];
+    char files[MAXNFILES][MAX_FILENAME_LENGHT];
 	int nfile = 0;
     
     while(1)
@@ -28,8 +39,9 @@ int main(){
         switch (cmd)
         {
         case COMMAND_ADD:
+            
             readline(STDIN_FILENO, fileName, MAX_FILENAME_LENGHT);
-            addFile(files, &nfile , fileName);
+            addFile(files,&nfile, fileName);          
             break;
         case COMMAND_SETP:
             P = readNumber(STDIN_FILENO);
@@ -38,6 +50,9 @@ int main(){
         case COMMAND_SETQ:
             Q = readNumber(STDIN_FILENO);
             loggN(Q);
+            break;
+        case COMMAND_VIEW:
+            view(files,&nfile);
             break;
         
         default:
@@ -51,14 +66,28 @@ int main(){
 
 }
 
+void view(char files[][MAX_FILENAME_LENGHT], int *nfile){
+    /*int i;
+    for ( i = 0; i < *nfile; i++)
+    {
+        loggN(i);
+        write(STDOUT_FILENO, files[i], MAX_FILENAME_LENGHT);
+    }
 
-void addFile(char *files[], int *nfile, char *filename)
+     write(STDOUT_FILENO, "", MAX_FILENAME_LENGHT);
+   */
+
+}
+
+
+void addFile(char files[][MAX_FILENAME_LENGHT], int *nfile, char *filename)
 {    
 
 	if(checkFile(filename))
 	{
+        strcpy(files[*nfile], filename);
 		++(*nfile);
-		files[*nfile-1] = filename;
+		
 		logg("file aggiunto da A");
 		
 	}else{
