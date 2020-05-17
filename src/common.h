@@ -21,6 +21,13 @@ typedef struct Analysis_s
 #define COMMAND_SECTION 'N'
 #define COMMAND_QUIT 'Q'
 
+#define ADD_FILES '1'
+#define VIEW_FILES '2'
+#define EDIT_P '3'
+#define EDIT_Q '4'
+#define REPORT '5'
+#define QUIT '6'
+
 #define MAX_FILENAME_LENGHT 1024
 
 #define ERR_CO_OUTOFRANGE 1
