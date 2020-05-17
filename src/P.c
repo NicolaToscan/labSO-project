@@ -175,7 +175,7 @@ void forwardFile(int numberOfFiles, QData *Q, int qLen)
 	for (j = 0; j < qLen; j++)
 	{
 		sendCommand(Q[j].write, "F");
-		sendCommand(Q[j].write, "1");
+		sendCommand(Q[j].write, "1"); //TODO fix
 		//sendIntCommand(Q[j].write, numberOfFiles);
 	}
 
