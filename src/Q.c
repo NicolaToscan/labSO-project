@@ -59,7 +59,7 @@ void analyseChar(char c, Analysis *a)
 {
 	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 		a->letters++;
-	else if (c >= '1' && c <= '9')
+	else if (c >= '0' && c <= '9')
 		a->numbers++;
 	else if (c == ' ')
 		a->spaces++;
