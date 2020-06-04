@@ -1,6 +1,8 @@
 #define RESPONSE_OK 'Y'
 #define RESPONSE_KO 'N'
 
-#define Q_CMD_NUMBERS 'Q'
-#define Q_CMD_FILE 'F'
-#define Q_CMD_KILL 'K'
+#define CMD_FILE 'F'
+#define CMD_KILL 'K'
+
+#define CMD_Q_NUMBERS 'Q'
+#define CMD_P_Qs 'Q'

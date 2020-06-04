@@ -6,6 +6,7 @@
 #include "lib/analisys.h"
 #include "lib/common.h"
 #include "lib/commands.h"
+#include "lib/communication.h"
 
 #define IN STDIN_FILENO
 #define OUT STDOUT_FILENO
@@ -13,6 +14,7 @@
 int mySection = 1;
 int nrOfSections = 1;
 void readNumbers();
+void doFile();
 
 int main(int argc, char *argv[])
 {
@@ -26,17 +28,19 @@ int main(int argc, char *argv[])
 		{
 
 			//NUMBERS
-		case Q_CMD_NUMBERS:
+		case CMD_Q_NUMBERS:
 			readNumbers();
+			loggN(mySection);
+			loggN(nrOfSections);
 			break;
 
 			//FILE
-		case Q_CMD_FILE:
+		case CMD_FILE:
 			readNumbers();
 			break;
 
 			//KILL
-		case Q_CMD_KILL:
+		case CMD_KILL:
 			clearLine(IN);
 			exit(0);
 			break;
@@ -54,22 +58,14 @@ int main(int argc, char *argv[])
 
 void readNumbers()
 {
-	int n[2];
-	read(IN, n, 2 * sizeof(int));
-	mySection = n[0];
-	nrOfSections = n[1];
+	readQnumbers(IN, &mySection, &nrOfSections);
 	clearLine(IN);
-
-	logg("FATTO");
-	loggN(mySection);
-	loggN(nrOfSections);
 }
 
 void doFile()
 {
-	int len;
-	read(IN, &len, sizeof(int));
-	char *filename = (char *)malloc(len * sizeof(char));
-	read(IN, filename, len * sizeof(char));
+	char filename[4096];
+	readFilename(IN, filename);
 	clearLine(IN);
 }
+
