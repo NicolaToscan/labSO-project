@@ -8,10 +8,17 @@
 
 #define MAX_PATH_LENGHT 4096
 
+typedef enum { false, true } bool;
+
 void error(char msg[]);
-void loggN(int n);
 void logg(char msg[]);
+void loggN(int n);
+void loggC(char c);
 
 void sendCommand(const int file, char *cmd);
 void sendIntCommand(const int file, const int cmd);
 void sendCharCommand(const int file, const char cmd);
+
+void clearLine(const int file);
+char readchar(const int file);
+int readline(const int file, char *buffer, const int maxsize);

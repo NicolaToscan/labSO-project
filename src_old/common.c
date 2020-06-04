@@ -29,11 +29,11 @@ int readline(const int file, char *buffer, const int maxsize)
 	int i = 0;
 	while (i < maxsize)
 	{
-		char CH[1];
+		char c;
 
-		int rd = read(file, CH, 1);
-		buffer[i] = CH[0];
-		if (CH[0] == '\n')
+		int rd = read(file, &c, 1);
+		buffer[i] = c;
+		if (c == '\n')
 		{
 			buffer[i] = '\0';
 			return i;
