@@ -36,3 +36,5 @@ void sendCharCommand(const int file, const char cmd)
 	char buff[3] = {cmd, '\n', '\0'};
 	write(file, buff, strlen(buff));
 }
+
+
