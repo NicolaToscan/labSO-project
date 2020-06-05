@@ -11,22 +11,31 @@
 #define in stdin
 #define OUT STDOUT_FILENO
 
-typedef struct FileData_s
+typedef struct FileDataList_s
 {
     char *filename;
-    Analysis *Analysis;
-} FileData;
+    Analysis *analysis;
+    struct FileDataList_s *next;
+} FileDataList;
 
 int N = 1;
 int M = 1;
 
-FileData *files;
+FileDataList *files = NULL;
 
 void readCommand();
+void addFile(char *f);
+void removeFile(char *f);
+void printFiles();
 
 int main(int argc, char *argv[])
 {
     logg("A started");
+    while (true)
+    {
+        printFiles();
+        readCommand();
+    }
 }
 
 void readCommand()
@@ -70,9 +79,25 @@ void readCommand()
         else
             printFail(OUT);
     }
-    else if (strcmp(cmds[0], "F") == 0)
+    else if (strcmp(cmds[0], "F") == 0) //ADD FILE
     {
-        addFile(num, cmds);
+        if (num == 2)
+        {
+            addFile(cmds[1]);
+            printSuccess(OUT);
+        }
+        else
+            printFail(OUT);
+    }
+    else if (strcmp(cmds[0], "R") == 0) //REMOVE FILE
+    {
+        if (num == 2)
+        {
+            removeFile(cmds[1]);
+            printSuccess(OUT);
+        }
+        else
+            printFail(OUT);
     }
     else
     {
@@ -83,6 +108,70 @@ void readCommand()
     free(cmds);
 }
 
-void addFile()
+void addFile(char *f)
 {
+    if (files == NULL)
+    {
+        FileDataList *fd = (FileDataList *)malloc(sizeof(FileDataList));
+        fd->analysis = NULL;
+        fd->filename = (char *)malloc(MAX_PATH_LENGHT * sizeof(char));
+        strcpy(fd->filename, f);
+        files = fd;
+        return;
+    }
+
+    FileDataList *curr = files;
+
+    if (curr != NULL)
+        do
+        {
+            if (strcmp(curr->filename, f) == 0)
+                return;
+            if (curr->next == NULL)
+                break;
+            curr = curr->next;
+        } while (true);
+
+    FileDataList *fd = (FileDataList *)malloc(sizeof(FileDataList));
+    fd->analysis = NULL;
+    fd->filename = (char *)malloc(MAX_PATH_LENGHT * sizeof(char));
+    strcpy(fd->filename, f);
+    curr->next = fd;
+}
+
+void removeFile(char *f)
+{
+    FileDataList *prev = NULL;
+    FileDataList *curr = files;
+
+    while (curr != NULL)
+    {
+        if (strcmp(curr->filename, f) == 0)
+        {
+            if (prev == NULL)
+                files = curr->next;
+            else
+                prev->next = curr->next;
+
+            free(curr->analysis);
+            free(curr->filename);
+            free(curr);
+            break;
+        }
+
+        prev = curr;
+        curr = curr->next;
+    }
+}
+
+void printFiles()
+{
+    logg("FILES");
+    FileDataList *curr = files;
+    while (curr != NULL)
+    {
+        write(OUT, curr->filename, strlen(curr->filename));
+        write(OUT, "\n", 1);
+        curr = curr->next;
+    }
 }
