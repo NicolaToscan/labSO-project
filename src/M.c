@@ -13,16 +13,22 @@
 
 #define MAX_CMD_LENGHT 8192
 
+int WRITE_A = 0;
+int READ_A = 0;
+int PID_A = 0;
+
+int N = 1;
+int M = 1;
+
+void startA();
 void readCommand();
 void setCmd(int argc, char *argv[]);
+void quit(int argc, char *argv[]);
+void help(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-    int i;
-    for (i = 0; i < argc; i++)
-    {
-        printf("%s\n", argv[i]);
-    }
+    //startA();
 
     while (true)
     {
@@ -33,10 +39,53 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+void startA()
+{
+    int WRITE = 1;
+    int READ = 0;
+
+    int fdDOWN[2];
+    pipe(fdDOWN);
+    WRITE_A = fdDOWN[WRITE];
+
+    int fdUP[2];
+    pipe(fdUP);
+    READ_A = fdUP[READ];
+
+    pid_t pid = fork();
+    if (pid > 0) // Parent
+    {
+        PID_A = pid;
+        close(fdDOWN[READ]);
+        close(fdUP[WRITE]);
+    }
+    else if (pid == 0)
+    {
+        close(fdDOWN[WRITE]);
+        close(fdUP[READ]);
+
+        dup2(fdDOWN[READ], STDIN_FILENO);
+        dup2(fdUP[WRITE], STDOUT_FILENO);
+
+        //UN GIORNO
+        exit(0);
+        if (execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0)
+        {
+            //TODO: handle exec error
+            error("EXEC error");
+        }
+    }
+    else
+    {
+        //TODO: handle fork error
+        error("FORK error");
+    }
+}
+
 void readCommand()
 {
-    size_t buffSize = MAX_CMD_LENGHT;
-    char *inLine;
+    size_t buffSize = 32;
+    char *inLine = NULL;
     int len = getline(&inLine, &buffSize, in);
     inLine[--len] = '\0';
     char **cmds = NULL;
@@ -54,6 +103,7 @@ void readCommand()
         cmds[num - 1] = p;
         p = strtok(NULL, " ");
     }
+    optind = 1; //RESET COSO CHE LETTE OPTs
 
     if (strcmp(cmds[0], "set") == 0)
     {
@@ -67,32 +117,76 @@ void readCommand()
     }
     else if (strcmp(cmds[0], "help") == 0)
     {
+        help(num, cmds);
     }
     else if (strcmp(cmds[0], "quit") == 0)
     {
+        quit(num, cmds);
     }
     else
     {
         printf("Command '%s' not found, type help\n", cmds[0]);
     }
+
+    free(inLine);
+    free(cmds);
 }
 
 void setCmd(int argc, char *argv[])
 {
+
+    bool nSet = false, mSet = false;
+    int n = 0, m = 0;
     char c;
     while ((c = getopt(argc, argv, "n:m:")) != -1)
     {
         switch (c)
         {
         case 'n':
-            printf("N: %s\n", optarg);
+            nSet = true;
+            n = atoi(optarg);
             break;
         case 'm':
-            printf("N: %s\n", optarg);
+            mSet = true;
+            m = atoi(optarg);
+            break;
+
+        case '?':
+            if (optopt == 'm')
+                printf("set: argument for 'm' not found\n");
+            else if (optopt == 'n')
+                printf("set: argument for 'n' not found\n");
+
             break;
 
         default:
             break;
         }
     }
+
+    if (nSet)
+    {
+        if (n <= 0)
+            printf("set: argument for 'n' not valid\n");
+        else
+            N = n;
+    }
+
+    if (mSet)
+    {
+        if (m <= 0)
+            printf("set: argument for 'm' not valid\n");
+        else
+            M = m;
+    }
+}
+
+void help(int argc, char *argv[])
+{
+    printf("NO\n");
+}
+
+void quit(int argc, char *argv[])
+{
+    exit(0);
 }
