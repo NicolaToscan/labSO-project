@@ -23,7 +23,7 @@ void startP(PData *pData, int qs);
 PData *resizePs(const int newN, int *nCurr, PData *P, int qs);
 void resetP(const int WRITE, const int READ, const int qs);
 void killP(const int WRITE, const int READ);
-void forwardFile(PData *P, int pLen);
+void forwardFile(PData *P, int pLen, int *toSendFile);
 void updatePandQ(PData *P, int *nCurr, int *qs);
 
 int main(int argc, char *argv[])
@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
     int qs = 1;
     int currentPs = 1;
+    int toSendFile = 0;
     PData *P = calloc(currentPs, sizeof(PData));
     startP(P, qs);
 
@@ -48,7 +49,7 @@ int main(int argc, char *argv[])
 
             //FORWARD FILE
         case CMD_FILE:
-            forwardFile(P, currentPs);
+            forwardFile(P, currentPs, &toSendFile);
             clearLine(IN);
             break;
 
@@ -80,14 +81,13 @@ void updatePandQ(PData *P, int *nCurr, int *qs)
     *qs = q;
 }
 
-void forwardFile(PData *P, int pLen)
+void forwardFile(PData *P, int pLen, int *toSendFile)
 {
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
 
-    int i = 0;
-    for (i = 0; i < pLen; i++)
-        sendFilename(P[i].write, filename, filenameLen);
+    *toSendFile = (*toSendFile + 1) % pLen;
+    sendFilename(P[*toSendFile].write, filename, filenameLen);
 }
 
 void startP(PData *pData, int qs)
