@@ -11,3 +11,6 @@ void sendFilename(const int fd, char *filename, int len);
 int readFilename(const int fd, char *filename);
 void sendPQs(const int fd, const int qs);
 int readPQs(const int fd);
+void sendPandQ(const int fd, const int P, const int Q);
+void readPandQ(const int fd, int *P, int *Q);
+

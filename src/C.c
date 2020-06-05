@@ -11,51 +11,52 @@
 #define IN STDIN_FILENO
 #define OUT STDOUT_FILENO
 
-typedef struct QData_s
+typedef struct PData_s
 {
     int write;
     int read;
     int pid;
 
-} QData;
+} PData;
 
-void startQ(QData *qData, const int section, const int sections);
-QData *resizeQs(const int newN, int *nCurr, QData *Q);
-void resetQ(const int WRITE, const int READ, const int section, const int sections);
-void killQ(const int WRITE, const int READ);
-void forwardFile(QData *Q, int qLen);
+void startP(PData *pData, int qs);
+PData *resizePs(const int newN, int *nCurr, PData *P, int qs);
+void resetP(const int WRITE, const int READ, const int qs);
+void killP(const int WRITE, const int READ);
+void forwardFile(PData *P, int pLen);
+void updatePandQ(PData *P, int *nCurr, int *qs);
 
 int main(int argc, char *argv[])
 {
-	logg("P started");
+    logg("C started");
 
-    int currentQs = 1;
-    QData *Q = calloc(currentQs, sizeof(QData));
-    startQ(Q, 1, 1);
+    int qs = 1;
+    int currentPs = 1;
+    PData *P = calloc(currentPs, sizeof(PData));
+    startP(P, qs);
 
     while (true)
     {
         char cmd = readchar(IN);
-
         switch (cmd)
         {
-            //UPDATE Qs
-        case CMD_P_Qs:
-            resizeQs(readPQs(IN), &currentQs, Q);
+            //UPDATE Q and P
+        case CMD_C_PandQ:
+            updatePandQ(P, &currentPs, &qs);
             clearLine(IN);
             break;
 
             //FORWARD FILE
         case CMD_FILE:
-            forwardFile(Q, currentQs);
+            forwardFile(P, currentPs);
             clearLine(IN);
             break;
 
             //KILL
         case CMD_KILL:
             clearLine(IN);
-            resizeQs(0, &currentQs, Q);
-            logg("P KILLED");
+            resizePs(0, &currentPs, P, qs);
+            logg("C KILLED");
             exit(0);
             break;
 
@@ -70,36 +71,45 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void forwardFile(QData *Q, int qLen)
+void updatePandQ(PData *P, int *nCurr, int *qs)
+{
+    int p, q;
+    readPandQ(IN, &p, &q);
+
+    resizePs(p, nCurr, P, q);
+    *qs = q;
+}
+
+void forwardFile(PData *P, int pLen)
 {
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
 
     int i = 0;
-    for (i = 0; i < qLen; i++)
-        sendFilename(Q[i].write, filename, filenameLen);
+    for (i = 0; i < pLen; i++)
+        sendFilename(P[i].write, filename, filenameLen);
 }
 
-void startQ(QData *qData, const int section, const int sections)
+void startP(PData *pData, int qs)
 {
     int WRITE = 1;
     int READ = 0;
 
     int fdDOWN[2];
     pipe(fdDOWN);
-    qData->write = fdDOWN[WRITE];
+    pData->write = fdDOWN[WRITE];
 
     int fdUP[2];
     pipe(fdUP);
-    qData->read = fdUP[READ];
+    pData->read = fdUP[READ];
 
     pid_t pid = fork();
     if (pid > 0) //Parent
     {
-        qData->pid = pid;
+        pData->pid = pid;
         close(fdDOWN[READ]);
         close(fdUP[WRITE]);
-        resetQ(qData->write, qData->read, section, sections);
+        resetP(pData->write, pData->read, qs);
     }
     else if (pid == 0) //Child
     {
@@ -112,7 +122,7 @@ void startQ(QData *qData, const int section, const int sections)
         //close(fdDOWN[READ]);
         //close(fdUP[WRITE]);
 
-        if (execlp(FILENAME_Q, FILENAME_Q, (char *)NULL) < 0)
+        if (execlp(FILENAME_P, FILENAME_P, (char *)NULL) < 0)
         {
             //TODO: handle exec error
             error("EXEC error");
@@ -125,51 +135,45 @@ void startQ(QData *qData, const int section, const int sections)
     }
 }
 
-QData *resizeQs(const int newN, int *nCurr, QData *Q)
+PData *resizePs(const int newN, int *nCurr, PData *P, int qs)
 {
     //TODO: forse realloc
     if (newN == *nCurr)
-        return Q;
+        return P;
 
-    QData *newQ = (QData *)calloc(newN, sizeof(QData));
+    PData *newP = (PData *)calloc(newN, sizeof(PData));
 
     int toCopy = newN < *nCurr ? newN : *nCurr;
     int i = 0;
     for (i = 0; i < toCopy; i++)
     {
-        newQ[i].read = Q[i].read;
-        newQ[i].write = Q[i].write;
-        newQ[i].pid = Q[i].pid;
-        resetQ(newQ[i].write, newQ[i].read, i + 1, newN);
+        newP[i].read = P[i].read;
+        newP[i].write = P[i].write;
+        newP[i].pid = P[i].pid;
+        resetP(newP[i].write, newP[i].read, qs);
     }
 
     if (newN > *nCurr)
     {
         for (; i < newN; i++)
-            startQ(newQ + i, i + 1, newN);
+            startP(newP + i, qs);
     }
     else //(n < nCurr)
     {
         for (; i < *nCurr; i++)
-            killQ(Q[i].write, Q[i].read);
+            killP(P[i].write, P[i].read);
     }
-    free(Q);
+    free(P);
     *nCurr = newN;
-    return newQ;
+    return newP;
 }
 
-void resetQ(const int WRITE, const int READ, const int section, const int sections)
+void resetP(const int WRITE, const int READ, const int qs)
 {
-    if (section > sections)
-    {
-        error("Index bigger that range");
-        exit(12345); //TODO: fix
-    }
-
-    sendQnumbers(WRITE, section, sections);
+    sendPQs(WRITE, qs);
 }
 
-void killQ(const int WRITE, const int READ)
+void killP(const int WRITE, const int READ)
 {
     sendKill(WRITE);
     //TODO close pipe

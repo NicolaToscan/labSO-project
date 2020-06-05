@@ -9,8 +9,8 @@
 
 void sendKill(const int fd)
 {
-    char cmd = CMD_KILL;
-    write(fd, &cmd, sizeof(char));
+    char cmd[2] = {CMD_KILL, '\n'};
+    write(fd, &cmd, 2 * sizeof(char));
 }
 
 void sendFilename(const int fd, char *filename, int len)
@@ -55,6 +55,20 @@ void sendPQs(const int fd, const int qs)
 int readPQs(const int fd)
 {
     int q;
-    read(fd, &q, 2 * sizeof(int));
+    read(fd, &q, sizeof(int));
     return q;
+}
+
+void sendPandQ(const int fd, const int P, const int Q)
+{
+    char cmd = CMD_C_PandQ;
+    write(fd, &cmd, sizeof(char));
+    write(fd, &P, sizeof(int));
+    write(fd, &Q, sizeof(int));
+    write(fd, "\n", sizeof(char));
+}
+void readPandQ(const int fd, int *P, int *Q)
+{
+    read(fd, &P, sizeof(int));
+    read(fd, &Q, sizeof(int));
 }

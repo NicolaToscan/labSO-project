@@ -30,8 +30,6 @@ int main(int argc, char *argv[])
 			//NUMBERS
 		case CMD_Q_NUMBERS:
 			readNumbers();
-			loggN(mySection);
-			loggN(nrOfSections);
 			break;
 
 			//FILE
@@ -42,6 +40,7 @@ int main(int argc, char *argv[])
 			//KILL
 		case CMD_KILL:
 			clearLine(IN);
+            logg("Q KILLED");
 			exit(0);
 			break;
 
