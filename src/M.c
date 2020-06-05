@@ -11,8 +11,6 @@
 #define in stdin
 #define out stdout
 
-#define MAX_CMD_LENGHT 8192
-
 int WRITE_A = 0;
 int READ_A = 0;
 int PID_A = 0;
@@ -29,7 +27,8 @@ void help(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-    //startA();
+	logg("M started");
+    startA();
 
     while (true)
     {
@@ -85,7 +84,7 @@ void startA()
 
 void readCommand()
 {
-    size_t buffSize = 32;
+    size_t buffSize = MAX_CMD_LENGHT;
     char *inLine = NULL;
     int len = getline(&inLine, &buffSize, in);
     inLine[--len] = '\0';

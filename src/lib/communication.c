@@ -7,6 +7,15 @@
 #include "common.h"
 #include "commands.h"
 
+void printSuccess(const int fd)
+{
+    write(fd, "Y\n", 2 * sizeof(char));
+}
+void printFail(const int fd)
+{
+    write(fd, "N\n", 2 * sizeof(char));
+}
+
 void sendKill(const int fd)
 {
     char cmd[2] = {CMD_KILL, '\n'};

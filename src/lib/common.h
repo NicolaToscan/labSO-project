@@ -7,6 +7,7 @@
 #define FILENAME_M "./M.out"
 
 #define MAX_PATH_LENGHT 4096
+#define MAX_CMD_LENGHT 8192
 
 typedef enum { false, true } bool;
 
