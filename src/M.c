@@ -85,6 +85,8 @@ void readCommand()
     size_t buffSize = MAX_CMD_LENGHT;
     char *inLine = NULL;
     int len = getline(&inLine, &buffSize, in);
+    if (len <= 1)
+        return;
     inLine[--len] = '\0';
     char **cmds = NULL;
     char *p = strtok(inLine, " ");

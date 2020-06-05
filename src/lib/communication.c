@@ -35,6 +35,7 @@ int readFilename(const int fd, char *filename)
     int len;
     read(fd, &len, sizeof(int));
     read(fd, filename, len * sizeof(char));
+    filename[len] = '\0';
     return len;
 }
 

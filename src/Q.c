@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 			//KILL
 		case CMD_KILL:
 			clearLine(IN);
-            logg("Q KILLED");
+			logg("Q KILLED");
 			exit(0);
 			break;
 
@@ -68,3 +68,7 @@ void doFile()
 	clearLine(IN);
 }
 
+void analyseFile(char *f)
+{
+	
+}
