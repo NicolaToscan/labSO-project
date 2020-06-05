@@ -22,6 +22,7 @@ int M = 1;
 
 void startA();
 void readCommand();
+void file(int argc, char *argv[]);
 void setCmd(int argc, char *argv[]);
 void quit(int argc, char *argv[]);
 void help(int argc, char *argv[]);
@@ -111,9 +112,11 @@ void readCommand()
     }
     else if (strcmp(cmds[0], "file") == 0)
     {
+        file(num, cmds);
     }
     else if (strcmp(cmds[0], "report") == 0)
     {
+        //TODO: report
     }
     else if (strcmp(cmds[0], "help") == 0)
     {
@@ -178,6 +181,56 @@ void setCmd(int argc, char *argv[])
             printf("set: argument for 'm' not valid\n");
         else
             M = m;
+    }
+}
+
+void file(int argc, char *argv[])
+{
+    char c;
+    while ((c = getopt(argc, argv, "a:r:w:")) != -1)
+    {
+        switch (c)
+        {
+            //ADD FILE
+        case 'a':
+            optind--;
+            for (; optind < argc && *argv[optind] != '-'; optind++)
+            {
+                logg(argv[optind]);
+            }
+            break;
+
+            //REMOVE FILE
+        case 'r':
+            optind--;
+            for (; optind < argc && *argv[optind] != '-'; optind++)
+            {
+                logg(argv[optind]);
+            }
+            break;
+
+            //RECHECK FILE
+        case 'w':
+            optind--;
+            for (; optind < argc && *argv[optind] != '-'; optind++)
+            {
+                logg(argv[optind]);
+            }
+            break;
+
+        case '?':
+            if (optopt == 'a')
+                printf("set: argument for 'm' not found\n");
+            else if (optopt == 'r')
+                printf("set: argument for 'n' not found\n");
+            else if (optopt == 'w')
+                printf("set: argument for 'w' not found\n");
+
+            break;
+
+        default:
+            break;
+        }
     }
 }
 
