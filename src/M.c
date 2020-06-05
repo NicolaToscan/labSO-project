@@ -27,7 +27,7 @@ void help(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-	logg("M started");
+    logg("M started");
     startA();
 
     while (true)
@@ -67,8 +67,6 @@ void startA()
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-        //UN GIORNO
-        exit(0);
         if (execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0)
         {
             //TODO: handle exec error
@@ -123,6 +121,7 @@ void readCommand()
     }
     else if (strcmp(cmds[0], "quit") == 0)
     {
+        sendKill(WRITE_A);
         quit(num, cmds);
     }
     else
@@ -186,7 +185,7 @@ void setCmd(int argc, char *argv[])
 void file(int argc, char *argv[])
 {
     char c;
-    while ((c = getopt(argc, argv, "a:r:w:")) != -1)
+    while ((c = getopt(argc, argv, "a:r:u:")) != -1)
     {
         switch (c)
         {
@@ -209,7 +208,7 @@ void file(int argc, char *argv[])
             break;
 
             //RECHECK FILE
-        case 'w':
+        case 'u':
             optind--;
             for (; optind < argc && *argv[optind] != '-'; optind++)
             {
@@ -223,7 +222,7 @@ void file(int argc, char *argv[])
             else if (optopt == 'r')
                 printf("set: argument for 'n' not found\n");
             else if (optopt == 'w')
-                printf("set: argument for 'w' not found\n");
+                printf("set: argument for 'u' not found\n");
 
             break;
 
@@ -240,5 +239,6 @@ void help(int argc, char *argv[])
 
 void quit(int argc, char *argv[])
 {
+    logg("M killed");
     exit(0);
 }

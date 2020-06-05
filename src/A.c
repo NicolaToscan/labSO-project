@@ -21,20 +21,69 @@ typedef struct FileDataList_s
 int N = 1;
 int M = 1;
 
+int WRITE_C = 0;
+int READ_C = 0;
+int PID_C = 0;
+
+
 FileDataList *files = NULL;
 
+void startC();
 void readCommand();
 void addFile(char *f);
 void removeFile(char *f);
+void toUpdateFile(char *f);
 void printFiles();
 
 int main(int argc, char *argv[])
 {
+    startC();
     logg("A started");
     while (true)
     {
         printFiles();
         readCommand();
+    }
+}
+
+void startC()
+{
+    int WRITE = 1;
+    int READ = 0;
+
+    int fdDOWN[2];
+    pipe(fdDOWN);
+    WRITE_C = fdDOWN[WRITE];
+
+    int fdUP[2];
+    pipe(fdUP);
+    READ_C = fdUP[READ];
+
+    pid_t pid = fork();
+    if (pid > 0) // Parent
+    {
+        PID_C = pid;
+        close(fdDOWN[READ]);
+        close(fdUP[WRITE]);
+    }
+    else if (pid == 0)
+    {
+        close(fdDOWN[WRITE]);
+        close(fdUP[READ]);
+
+        dup2(fdDOWN[READ], STDIN_FILENO);
+        dup2(fdUP[WRITE], STDOUT_FILENO);
+
+        if (execlp(FILENAME_C, FILENAME_C, (char *)NULL) < 0)
+        {
+            //TODO: handle exec error
+            error("EXEC error");
+        }
+    }
+    else
+    {
+        //TODO: handle fork error
+        error("FORK error");
     }
 }
 
@@ -99,6 +148,22 @@ void readCommand()
         else
             printFail(OUT);
     }
+    else if (strcmp(cmds[0], "U") == 0) //TO UPDATE FILE
+    {
+        if (num == 2)
+        {
+            toUpdateFile(cmds[1]);
+            printSuccess(OUT);
+        }
+        else
+            printFail(OUT);
+    }
+    else if (strcmp(cmds[0], "K") == 0) //KILL
+    {
+        sendKill(WRITE_C);
+        logg("A killed");
+        exit(0);
+    }
     else
     {
         printFail(OUT);
@@ -160,6 +225,22 @@ void removeFile(char *f)
         }
 
         prev = curr;
+        curr = curr->next;
+    }
+}
+
+void toUpdateFile(char *f)
+{
+    FileDataList *curr = files;
+
+    while (curr != NULL)
+    {
+        if (strcmp(curr->filename, f) == 0)
+        {
+            free(curr->analysis);
+            curr->analysis = NULL;
+            break;
+        }
         curr = curr->next;
     }
 }
