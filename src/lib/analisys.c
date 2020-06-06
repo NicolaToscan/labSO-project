@@ -20,102 +20,50 @@ Analysis initAnalysis()
 
 void printAnalysis(const int file, Analysis a)
 {
-    char buffer[9 * ULONG_MAXLEN];
-
-    int i;
-    for(i = 0; i < 9; i++)
-    {
-        intToStr(a.values[i], buffer, i * ULONG_MAXLEN);
-    }
-
-    write(file, buffer, sizeof(buffer));
+    write(file, a.values, sizeof(a.values));
 }
 
 Analysis readAnalysis(const int file)
 {
     Analysis a;
-    char buffer[9 * ULONG_MAXLEN];
-
-    read(file, buffer, sizeof(buffer));
-    
-    int i;
-    for(i = 0; i < 9; i++)
-    {
-        a.values[i] = (buffer, i * ULONG_MAXLEN, a.values[i]);
-    }
-
+    read(file, a.values, sizeof(a.values));
     return a;
 }
 
-void intToStr(ulong value, char *str, int startIndex)
+void addCharAnalysis(Analysis a, char c)
 {
-    int i;
-    for(i = 0; i < ULONG_MAXLEN; i++)
+    if(isText(c))
     {
-        str[startIndex + i] = '0';
+        if(isUppLetter(c))
+            a.values[AN_UPPLT]++;
+        else if(isLowLetter(c))
+            a.values[AN_LOWLT]++;
+        else if(isNumber(c))
+            a.values[AN_NUMBR]++;
+        else if(isMathSymbol(c))
+            a.values[AN_MATHS]++;
+        else if(isPunctuation(c))
+            a.values[AN_PUNCT]++;
+        else if(isBracket(c))
+            a.values[AN_BRCKT]++;
+        else if(isSpace(c))
+            a.values[AN_SPACE]++;
+        else
+            a.values[O_TEXT]++;
+        
     }
-
-    int index = ULONG_MAXLEN - 1;
-    while(value > 0)
+    else
     {
-        str[startIndex + index--] = '0' + (value % 10);
-        value /= 10;
+        a.values[AN_OTHER]++;
     }
+    
 }
 
-ulong strToInt(char *str, int startIndex)
-{
-    ulong ul = 0;
-    int index = 0;
-    char c[1];
-
-    while(index < ULONG_MAXLEN)
-    {
-        c[startIndex + 0] = str[index++];
-        ul = (ul * 10) + atoi(c);
-    }
-
-    return ul;
-}
-
-// Forse inutile
-void intToStr(ulong value, char str[ULONG_MAXLEN])
-{
-    int i;
-    for(i = 0; i < ULONG_MAXLEN; i++)
-    {
-        str[i] = '0';
-    }
-
-    int index = ULONG_MAXLEN - 1;
-    while(value > 0)
-    {
-        str[index--] = '0' + (value % 10);
-        value /= 10;
-    }
-}
-
-// Forse inutile
-ulong strToInt(char str[ULONG_MAXLEN])
-{
-    ulong ul = 0;
-    int index = 0;
-    char c[1];
-
-    while(index < ULONG_MAXLEN)
-    {
-        c[0] = str[index++];
-        ul = (ul * 10) + atoi(c);
-    }
-
-    return ul;
-}
-
-bool isText(char c)         { return c >= ' ' && c <= '~'; }
-bool isUppLetter(char c)    { return c >= 'A' && c <= 'Z'; }
-bool isLowLetter(char c)    { return c >= 'a' && c <= 'z'; }
-bool isNumber(char c)       { return c >= '0' && c <= '9'; }
-bool isMathSymbol(char c)   { return strstr("=<>+-*/", c) != NULL; }
-bool isPunctuation(char c)  { return strstr(".,:;'!?`\"", c) != NULL; }
-bool isBracket(char c)      { return strstr("()[]{}", c) != NULL; }
-bool isSpace(char c)        { return c == ' '; }
+int isText(char c)         { return (c >= ' ' && c <= '~')              ? 1 : 0; }
+int isUppLetter(char c)    { return (c >= 'A' && c <= 'Z')              ? 1 : 0; }
+int isLowLetter(char c)    { return (c >= 'a' && c <= 'z')              ? 1 : 0; }
+int isNumber(char c)       { return (c >= '0' && c <= '9')              ? 1 : 0; }
+int isMathSymbol(char c)   { return (strstr("=<>+-*/", &c) != NULL)     ? 1 : 0; }
+int isPunctuation(char c)  { return (strstr(".,:;'!?`\"", &c) != NULL)  ? 1 : 0; }
+int isBracket(char c)      { return (strstr("()[]{}", &c) != NULL)      ? 1 : 0; }
+int isSpace(char c)        { return (c == ' ')                          ? 1 : 0; }
