@@ -21,8 +21,8 @@ typedef struct QData_s
 
 void startQ(QData *qData, const int section, const int sections);
 QData *resizeQs(const int newN, int *nCurr, QData *Q);
-void resetQ(const int WRITE, const int READ, const int section, const int sections);
-void killQ(const int WRITE, const int READ);
+void resetQ(const int write, const int read, const int section, const int sections);
+void killQ(const int write, const int read);
 void forwardFile(QData *Q, int qLen);
 
 int main(int argc, char *argv[])
@@ -82,9 +82,6 @@ void forwardFile(QData *Q, int qLen)
 
 void startQ(QData *qData, const int section, const int sections)
 {
-    int WRITE = 1;
-    int READ = 0;
-
     int fdDOWN[2];
     pipe(fdDOWN);
     qData->write = fdDOWN[WRITE];
@@ -158,7 +155,7 @@ QData *resizeQs(const int newN, int *nCurr, QData *Q)
     return newQ;
 }
 
-void resetQ(const int WRITE, const int READ, const int section, const int sections)
+void resetQ(const int write, const int read, const int section, const int sections)
 {
     if (section > sections)
     {
@@ -166,11 +163,11 @@ void resetQ(const int WRITE, const int READ, const int section, const int sectio
         exit(12345); //TODO: fix
     }
 
-    sendQnumbers(WRITE, section, sections);
+    sendQnumbers(write, section, sections);
 }
 
-void killQ(const int WRITE, const int READ)
+void killQ(const int write, const int read)
 {
-    sendKill(WRITE);
+    sendKill(write);
     //TODO close pipe
 }

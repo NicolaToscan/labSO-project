@@ -37,6 +37,7 @@ void removeFile(char *f);
 void toUpdateFile(char *f);
 void printFiles();
 void startAReport();
+bool checkFileExist(char *f);
 
 int main(int argc, char *argv[])
 {
@@ -47,13 +48,11 @@ int main(int argc, char *argv[])
         //printFiles();
         readCommand();
     }
+    return 0;
 }
 
 void startC()
 {
-    int WRITE = 1;
-    int READ = 0;
-
     int fdDOWN[2];
     pipe(fdDOWN);
     WRITE_C = fdDOWN[WRITE];
@@ -137,7 +136,7 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "A") == 0) //ADD FILE
         {
-            if (num == 2)
+            if (num == 2 && checkFileExist(cmds[1]))
             {
                 addFile(cmds[1]);
                 printSuccess(OUT);
@@ -147,7 +146,7 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "R") == 0) //REMOVE FILE
         {
-            if (num == 2)
+            if (num == 2 && checkFileExist(cmds[1]))
             {
                 removeFile(cmds[1]);
                 printSuccess(OUT);
@@ -157,7 +156,7 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "U") == 0) //TO UPDATE FILE
         {
-            if (num == 2)
+            if (num == 2 && checkFileExist(cmds[1]))
             {
                 toUpdateFile(cmds[1]);
                 printSuccess(OUT);
@@ -173,6 +172,7 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "K") == 0) //KILL
         {
+            loggN(WRITE_C);
             sendKill(WRITE_C);
             logg("A killed");
             exit(0);
@@ -271,15 +271,44 @@ void printFiles()
     }
 }
 
+bool checkFileExist(char *f)
+{
+    bool trovato = false;
+    int fd[2];
+    pipe(fd);
+
+    pid_t pid = fork();
+    if (pid > 0) //PARENT
+    {
+        close(fd[WRITE]);
+        char buff[MAX_PATH_LENGHT];
+        int letti = read(fd[READ], buff, MAX_PATH_LENGHT);
+        if (letti == 0)
+            trovato = true;
+        close(fd[READ]);
+    }
+    else if (pid == 0) //CHILD
+    {
+        close(fd[READ]);
+        dup2(fd[WRITE], STDERR_FILENO);
+        dup2(open("/dev/null", O_WRONLY), STDOUT_FILENO);
+
+        execl("/usr/bin/find", "/usr/bin/find", f, NULL);
+        error("EXEC ERROR");
+    }
+    else
+    {
+        error("FORK ERROR");
+    }
+    return trovato;
+}
+
 void startAReport()
 {
     if (READ_REPORTER >= 0)
     {
         close(READ_REPORTER);
     }
-
-    int WRITE = 1;
-    int READ = 0;
 
     int pipeToReport[2];
     pipe(pipeToReport);

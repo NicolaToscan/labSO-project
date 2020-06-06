@@ -49,7 +49,7 @@ void addCharAnalysis(Analysis a, char c)
         else if(isSpace(c))
             a.values[AN_SPACE]++;
         else
-            a.values[O_TEXT]++;
+            a.values[AN_OTEXT]++;
         
     }
     else

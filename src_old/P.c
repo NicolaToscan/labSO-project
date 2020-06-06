@@ -3,8 +3,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include "common.h"
-#include "dataprotocol.h"
+#include "lib/common.h"
+#include "lib/dataprotocol.h"
 
 #define INPUT_FILE STDIN_FILENO
 #define OUTPUT_FILE STDOUT_FILENO
@@ -22,8 +22,8 @@ typedef struct QData_s
 } QData;
 
 QData *resizeQs(const int newN, int *nCurr, QData *Q);
-void killQ(const int WRITE, const int READ);
-void resetQ(const int WRITE, const int READ, const int section, const int sections);
+void killQ(const int write, const int read);
+void resetQ(const int write, const int read, const int section, const int sections);
 void startQ(QData *qData, const int section, const int sections);
 void forwardFile(int numberOfFiles, QData *Q, int qLen);
 void returnResult(QData *Q, int qLen);
@@ -107,7 +107,7 @@ void killQ(const int WRITE, const int READ)
 	//TODO close pipe
 }
 
-void resetQ(const int WRITE, const int READ, const int section, const int sections)
+void resetQ(const int write, const int read, const int section, const int sections)
 {
 	if (section > sections)
 	{
@@ -116,17 +116,14 @@ void resetQ(const int WRITE, const int READ, const int section, const int sectio
 		exit(ERR_CO_OUTOFRANGE);
 	}
 
-	sendCharCommand(WRITE, COMMAND_NR_SECTION);
-	sendIntCommand(WRITE, sections);
-	sendCharCommand(WRITE, COMMAND_SECTION);
-	sendIntCommand(WRITE, section);
+	sendCharCommand(write, COMMAND_NR_SECTION);
+	sendIntCommand(write, sections);
+	sendCharCommand(write, COMMAND_SECTION);
+	sendIntCommand(write, section);
 }
 
 void startQ(QData *qData, const int section, const int sections)
 {
-	int WRITE = 1;
-	int READ = 0;
-
 	int fdDOWN[2];
 	pipe(fdDOWN);
 	qData->write = fdDOWN[WRITE];

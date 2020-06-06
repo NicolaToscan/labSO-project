@@ -9,7 +9,14 @@
 #define MAX_PATH_LENGHT 4096
 #define MAX_CMD_LENGHT 8192
 
-typedef enum { false, true } bool;
+#define WRITE 1
+#define READ 0
+
+typedef enum
+{
+    false,
+    true
+} bool;
 
 void error(char msg[]);
 void logg(char msg[]);

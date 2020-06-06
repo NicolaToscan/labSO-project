@@ -43,9 +43,6 @@ int main(int argc, char *argv[])
 
 void startA()
 {
-    int WRITE = 1;
-    int READ = 0;
-
     int fdDOWN[2];
     pipe(fdDOWN);
     WRITE_A = fdDOWN[WRITE];

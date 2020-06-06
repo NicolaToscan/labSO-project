@@ -21,8 +21,8 @@ typedef struct PData_s
 
 void startP(PData *pData, int qs);
 PData *resizePs(const int newN, int *nCurr, PData *P, int qs);
-void resetP(const int WRITE, const int READ, const int qs);
-void killP(const int WRITE, const int READ);
+void resetP(const int write, const int read, const int qs);
+void killP(const int write, const int read);
 void forwardFile(PData *P, int pLen, int *toSendFile);
 void updatePandQ(PData *P, int *nCurr, int *qs);
 
@@ -92,9 +92,6 @@ void forwardFile(PData *P, int pLen, int *toSendFile)
 
 void startP(PData *pData, int qs)
 {
-    int WRITE = 1;
-    int READ = 0;
-
     int fdDOWN[2];
     pipe(fdDOWN);
     pData->write = fdDOWN[WRITE];
@@ -168,13 +165,13 @@ PData *resizePs(const int newN, int *nCurr, PData *P, int qs)
     return newP;
 }
 
-void resetP(const int WRITE, const int READ, const int qs)
+void resetP(const int write, const int read, const int qs)
 {
-    sendPQs(WRITE, qs);
+    sendPQs(write, qs);
 }
 
-void killP(const int WRITE, const int READ)
+void killP(const int write, const int read)
 {
-    sendKill(WRITE);
+    sendKill(write);
     //TODO close pipe
 }
