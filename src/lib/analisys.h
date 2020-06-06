@@ -3,18 +3,22 @@ typedef unsigned long ulong;
 
 typedef struct Analysis_s
 {
-	ulong uppLetters;
-	ulong lowLetters;
+	ulong values[9];
 
-	ulong numbers;
-	ulong mathSymbols;
+	//
 
-	ulong punctuaction;
-	ulong brackets;
-	ulong spaces;
+	ulong uppLetters() 		{ return values[0]; }
+	ulong lowLetters() 		{ return values[1]; }
 
-	ulong otherText;
-	ulong other;
+	ulong numbers() 		{ return values[2]; }
+	ulong mathSymbols() 	{ return values[3]; }
+
+	ulong punctuaction()	{ return values[4]; }
+	ulong brackets() 		{ return values[5]; }
+	ulong spaces() 			{ return values[6]; }
+
+	ulong otherText() 		{ return values[7]; }
+	ulong other() 			{ return values[8]; }
 } Analysis;
 
 Analysis initAnalysis();
@@ -23,7 +27,7 @@ void printAnalysis(const int file, Analysis a);
 Analysis readAnalysis(const int file);
 
 void intToStr(ulong value, char *str, int startIndex);
-void strToInt(char *str, int startIndex, ulong value);
+ulong strToInt(char *str, int startIndex);
 
 void intToStr(ulong value, char str[ULONG_MAXLEN]); // Forse inutile
 void strToInt(char str[ULONG_MAXLEN], ulong *value); // Forse inutile

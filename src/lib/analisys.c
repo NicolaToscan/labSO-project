@@ -8,29 +8,38 @@
 Analysis initAnalysis()
 {
     Analysis a;
-    a.val = 0;
+    
+    for(int i = 0; i < 9; i++)
+        a.values[i] = 0;
+
     return a;
 }
 
 void printAnalysis(const int file, Analysis a)
 {
+    char buffer[9 * ULONG_MAXLEN];
 
+    for(int i = 0; i < 9; i++)
+    {
+        intToStr(a.values[i], buffer, i * ULONG_MAXLEN);
+    }
 
-
-
-    //write(file, a.val, sizeof(int));
+    write(file, buffer, sizeof(buffer));
 }
 
 Analysis readAnalysis(const int file)
 {
+    Analysis a;
+    char buffer[9 * ULONG_MAXLEN];
+
+    read(file, buffer, sizeof(buffer));
     
+    for(int i = 0; i < 9; i++)
+    {
+        a.values[i] = (buffer, i * ULONG_MAXLEN, a.values[i]);
+    }
 
-
-
-
-    // Analysis a;
-    // read(file, a.val, sizeof(int));
-    // return a;
+    return a;
 }
 
 void intToStr(ulong value, char *str, int startIndex)
@@ -49,7 +58,7 @@ void intToStr(ulong value, char *str, int startIndex)
     }
 }
 
-void strToInt(char *str, int startIndex, ulong value)
+ulong strToInt(char *str, int startIndex)
 {
     ulong ul = 0;
     int index = 0;
@@ -61,7 +70,7 @@ void strToInt(char *str, int startIndex, ulong value)
         ul = (ul * 10) + atoi(c);
     }
 
-    *value = ul;
+    return ul;
 }
 
 // Forse inutile
