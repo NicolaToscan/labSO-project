@@ -12,11 +12,20 @@
 #define WRITE 1
 #define READ 0
 
+typedef unsigned long uint32;
+typedef unsigned long long uint64;
+
 typedef enum
 {
     false,
     true
 } bool;
+
+typedef struct pair_p
+{
+    uint32 first;
+    uint32 second;
+} pair;
 
 void error(char msg[]);
 void logg(char msg[]);

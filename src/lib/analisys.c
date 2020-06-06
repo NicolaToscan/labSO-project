@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include "common.h"
 #include "analisys.h"
 
 Analysis initAnalysis()
@@ -14,6 +15,28 @@ Analysis initAnalysis()
     {
         a.values[i] = 0;
     }
+
+    return a;
+}
+
+Analysis analyseFile(char *fileName, int mySection, int totSections)
+{
+    FILE *file;
+	file = fopen(fileName, "r");
+
+	fseek(file, 0, SEEK_END);
+	int fileLength = ftell(file);
+	pair part = getFileRange(fileLength, mySection, totSections);
+	int howmany = part.second - part.first + 1;
+
+	fseek(file, 0, part.first);
+	Analysis a = initAnalysis();
+	int i = 0;
+	while(i < howmany)
+	{
+		addCharAnalysis(a, (char)fgetc(file));
+	}
+	fclose(fp);
 
     return a;
 }
@@ -54,8 +77,7 @@ void addCharAnalysis(Analysis a, char c)
     else
     {
         a.values[AN_OTHER]++;
-    }
-    
+    }    
 }
 
 int isText(char c)         { return (c >= ' ' && c <= '~')              ? 1 : 0; }

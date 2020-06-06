@@ -1,4 +1,4 @@
-typedef unsigned long ulong;
+// typedef unsigned long ulong;
 
 #define AN_UPPLT 0
 #define AN_LOWLT 1
@@ -12,10 +12,12 @@ typedef unsigned long ulong;
 
 typedef struct Analysis_s
 {
-	ulong values[9];
+	uint32 values[9];
 } Analysis;
 
 Analysis initAnalysis();
+
+Analysis analyseFile(char *fileName, int mySection, int totSections);
 
 void printAnalysis(const int file, Analysis a);
 Analysis readAnalysis(const int file);
