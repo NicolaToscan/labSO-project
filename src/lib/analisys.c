@@ -23,16 +23,48 @@ void printAnalysis(const int file, Analysis a)
 
 Analysis readAnalysis(const int file)
 {
-
-
-
-
     
+
+
+
+
     // Analysis a;
     // read(file, a.val, sizeof(int));
     // return a;
 }
 
+void intToStr(ulong value, char *str, int startIndex)
+{
+    int i;
+    for(i = 0; i < ULONG_MAXLEN; i++)
+    {
+        str[startIndex + i] = '0';
+    }
+
+    int index = ULONG_MAXLEN - 1;
+    while(value > 0)
+    {
+        str[startIndex + index--] = '0' + (value % 10);
+        value /= 10;
+    }
+}
+
+void strToInt(char *str, int startIndex, ulong value)
+{
+    ulong ul = 0;
+    int index = 0;
+    char c[1];
+
+    while(index < ULONG_MAXLEN)
+    {
+        c[startIndex + 0] = str[index++];
+        ul = (ul * 10) + atoi(c);
+    }
+
+    *value = ul;
+}
+
+// Forse inutile
 void intToStr(ulong value, char str[ULONG_MAXLEN])
 {
     int i;
@@ -49,6 +81,7 @@ void intToStr(ulong value, char str[ULONG_MAXLEN])
     }
 }
 
+// Forse inutile
 void strToInt(char str[ULONG_MAXLEN], ulong *value)
 {
     ulong ul = 0;
@@ -63,7 +96,6 @@ void strToInt(char str[ULONG_MAXLEN], ulong *value)
 
     *value = ul;
 }
-
 
 bool isText(char c)         { return c >= ' ' && c <= '~'; }
 bool isUppLetter(char c)    { return c >= 'A' && c <= 'Z'; }

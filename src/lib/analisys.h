@@ -1,8 +1,6 @@
 typedef unsigned long ulong;
 #define ULONG_MAXLEN 7
 
-#define DIVCHAR '#'
-
 typedef struct Analysis_s
 {
 	ulong uppLetters;
@@ -20,11 +18,15 @@ typedef struct Analysis_s
 } Analysis;
 
 Analysis initAnalysis();
-void intToStr(ulong value, char str[ULONG_MAXLEN]);
-void strToInt(char str[ULONG_MAXLEN], ulong *value);
 
 void printAnalysis(const int file, Analysis a);
 Analysis readAnalysis(const int file);
+
+void intToStr(ulong value, char *str, int startIndex);
+void strToInt(char *str, int startIndex, ulong value);
+
+void intToStr(ulong value, char str[ULONG_MAXLEN]); // Forse inutile
+void strToInt(char str[ULONG_MAXLEN], ulong *value); // Forse inutile
 
 bool isText(char c);
 bool isUppLetter(char c);
