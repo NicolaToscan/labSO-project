@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 			//CLEAR LINE
 		default:
 			clearLine(IN);
-			logg("CMD NOT FOUND");
+			logg("CMD NOT FOUND DA Q");
 			break;
 		}
 	}
