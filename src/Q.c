@@ -7,12 +7,14 @@
 #include "lib/common.h"
 #include "lib/commands.h"
 #include "lib/communication.h"
+#include "lib/filemanager.h"
 
 #define IN STDIN_FILENO
 #define OUT STDOUT_FILENO
 
-int mySection = 1;
-int nrOfSections = 1;
+int mySection;
+int totSections;
+
 void readNumbers();
 void doFile();
 
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
 
 			//FILE
 		case CMD_FILE:
-			readNumbers();
+			doFile();
 			break;
 
 			//KILL
@@ -57,18 +59,16 @@ int main(int argc, char *argv[])
 
 void readNumbers()
 {
-	readQnumbers(IN, &mySection, &nrOfSections);
+	readQnumbers(IN, &mySection, &totSections);
 	clearLine(IN);
 }
 
 void doFile()
 {
-	char filename[4096];
-	readFilename(IN, filename);
+	char myFile[MAX_PATH_LENGHT];
+	readFilename(IN, myFile);
 	clearLine(IN);
-}
 
-void analyseFile(char *f)
-{
-	
+	Analysis a = analyseFile(myFile, mySection, sections);
+	printAnalysis(OUT, a);
 }
