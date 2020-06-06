@@ -195,7 +195,7 @@ void setCmd(int argc, char *argv[])
 void file(int argc, char *argv[])
 {
     char c;
-    while ((c = getopt(argc, argv, "a:r:u:")) != -1)
+    while ((c = getopt(argc, argv, "la:r:u:")) != -1)
     {
         switch (c)
         {
@@ -204,7 +204,6 @@ void file(int argc, char *argv[])
             optind--;
             for (; optind < argc && *argv[optind] != '-'; optind++)
             {
-                logg(argv[optind]);
                 forwardFile('A', argv[optind]);
             }
             break;
@@ -214,7 +213,6 @@ void file(int argc, char *argv[])
             optind--;
             for (; optind < argc && *argv[optind] != '-'; optind++)
             {
-                logg(argv[optind]);
                 forwardFile('R', argv[optind]);
             }
             break;
@@ -224,8 +222,37 @@ void file(int argc, char *argv[])
             optind--;
             for (; optind < argc && *argv[optind] != '-'; optind++)
             {
-                logg(argv[optind]);
                 forwardFile('U', argv[optind]);
+            }
+            break;
+
+            //LIST
+        case 'l':
+            write(WRITE_A, "L\n", 2);
+            int letti;
+            char buff[64];
+            int lastChar = '\0';
+            while ((letti = read(READ_A, buff, 64)) > 0)
+            {
+                lastChar = buff[letti - 1];
+                if (letti != 64)
+                    buff[letti] = '\0';
+
+                printf("%s", buff);
+
+                if (letti > 2)
+                {
+                    if (buff[letti - 1] == '\n' && buff[letti - 2] == '\n')
+                        break;
+                }
+                else if (letti == 1)
+                {
+
+                    if (buff[letti - 1] == '\n' && lastChar == '\n')
+                        break;
+                }
+                else
+                    break;
             }
             break;
 
@@ -265,8 +292,6 @@ void doReport()
         printf("Report started in background\n");
     else
         printf("Impossibile avviare il report\n");
-
-    
 }
 
 void help(int argc, char *argv[])

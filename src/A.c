@@ -164,6 +164,10 @@ void readCommand()
             else
                 printFail(OUT);
         }
+        else if (strcmp(cmds[0], "L") == 0) //LIST FILE
+        {
+            printFiles();
+        }
         else if (strcmp(cmds[0], "S") == 0) //START REPORT
         {
             logg("REPORT STARTED");
@@ -260,15 +264,15 @@ void toUpdateFile(char *f)
 
 void printFiles()
 {
-    logg("FILES");
     FileDataList *curr = files;
     while (curr != NULL)
     {
-        logg(curr->filename);
-        // write(OUT, curr->filename, strlen(curr->filename));
-        // write(OUT, "\n", 1);
+        //logg(curr->filename);
+        write(OUT, curr->filename, strlen(curr->filename));
+        write(OUT, "\n", 1);
         curr = curr->next;
     }
+    write(OUT, "\n", 1);
 }
 
 bool checkFileExist(char *f)
