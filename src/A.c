@@ -307,6 +307,10 @@ bool checkFileExist(char *f)
     return trovato;
 }
 
+
+// ----- REPORT STUFF -----
+void doReport();
+
 void startAReport()
 {
     if (READ_REPORTER >= 0)
@@ -326,7 +330,7 @@ void startAReport()
     {
         close(pipeToReport[READ]);
 
-        // TODO: start report
+        doReport();
 
         char resOK[2] = {RESPONSE_OK, '\n'};
         write(WRITE_TO_PARENT, resOK, 2);
@@ -338,4 +342,13 @@ void startAReport()
     read(READ_REPORTER, res, 2);
     isReporting = false;
     logg("REPORT FINITO");
+}
+
+void doReport()
+{
+    //SET P & Q
+    sendPandQ(WRITE_C, M, N);
+
+
+
 }

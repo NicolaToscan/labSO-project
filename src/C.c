@@ -76,7 +76,6 @@ void updatePandQ(PData *P, int *nCurr, int *qs)
 {
     int p, q;
     readPandQ(IN, &p, &q);
-
     resizePs(p, nCurr, P, q);
     *qs = q;
 }

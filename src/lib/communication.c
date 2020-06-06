@@ -22,12 +22,11 @@ bool readSimpleYNResponce(const int fd)
     int letti = read(fd, res, 2);
     if (letti != 2)
         return false;
-    
+
     if (res[0] != RESPONSE_OK)
         return false;
-    
-    return true;
 
+    return true;
 }
 
 void sendKill(const int fd)
@@ -90,9 +89,13 @@ void sendPandQ(const int fd, const int P, const int Q)
     write(fd, &P, sizeof(int));
     write(fd, &Q, sizeof(int));
     write(fd, "\n", sizeof(char));
+
+    logg("SENT");
+    loggN(P);
+    loggN(Q);
 }
 void readPandQ(const int fd, int *P, int *Q)
 {
-    read(fd, &P, sizeof(int));
-    read(fd, &Q, sizeof(int));
+    read(fd, P, sizeof(int));
+    read(fd, Q, sizeof(int));
 }

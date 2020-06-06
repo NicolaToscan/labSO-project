@@ -247,7 +247,6 @@ void file(int argc, char *argv[])
                 }
                 else if (letti == 1)
                 {
-
                     if (buff[letti - 1] == '\n' && lastChar == '\n')
                         break;
                 }
