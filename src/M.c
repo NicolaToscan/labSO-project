@@ -240,7 +240,7 @@ void file(int argc, char *argv[])
 
                 printf("%s", buff);
 
-                if (letti > 2)
+                if (letti > 2) // TODO: sistema sta merda
                 {
                     if (buff[letti - 1] == '\n' && buff[letti - 2] == '\n')
                         break;

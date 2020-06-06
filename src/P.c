@@ -27,7 +27,7 @@ void forwardFile(QData *Q, int qLen);
 
 int main(int argc, char *argv[])
 {
-	logg("P started");
+    logg("P started");
 
     int currentQs = 1;
     QData *Q = calloc(currentQs, sizeof(QData));
@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
         default:
             clearLine(IN);
             logg("CMD NOT FOUND DA P");
+            exit(0);
             break;
         }
     }

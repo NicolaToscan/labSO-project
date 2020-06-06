@@ -89,10 +89,6 @@ void sendPandQ(const int fd, const int P, const int Q)
     write(fd, &P, sizeof(int));
     write(fd, &Q, sizeof(int));
     write(fd, "\n", sizeof(char));
-
-    logg("SENT");
-    loggN(P);
-    loggN(Q);
 }
 void readPandQ(const int fd, int *P, int *Q)
 {

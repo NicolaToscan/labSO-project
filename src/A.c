@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "lib/analisys.h"
+#include <pthread.h>
 #include "lib/common.h"
 #include "lib/commands.h"
 #include "lib/communication.h"
@@ -11,12 +12,8 @@
 #define in stdin
 #define OUT STDOUT_FILENO
 
-typedef struct FileDataList_s
-{
-    char *filename;
-    Analysis *analysis;
-    struct FileDataList_s *next;
-} FileDataList;
+char **filenames;
+int filenamesLen = 0;
 
 int N = 1;
 int M = 1;
@@ -28,20 +25,17 @@ int PID_C = 0;
 int READ_REPORTER = -1;
 bool isReporting = false;
 
-FileDataList *files = NULL;
-
 void startC();
 void readCommand();
 void addFile(char *f);
 void removeFile(char *f);
-void toUpdateFile(char *f);
 void printFiles();
-void startAReport();
+bool startAReport();
 bool checkFileExist(char *f);
 
 int main(int argc, char *argv[])
 {
-    startC();
+    //startC();
     logg("A started");
     while (true)
     {
@@ -154,29 +148,17 @@ void readCommand()
             else
                 printFail(OUT);
         }
-        else if (strcmp(cmds[0], "U") == 0) //TO UPDATE FILE
-        {
-            if (num == 2 && checkFileExist(cmds[1]))
-            {
-                toUpdateFile(cmds[1]);
-                printSuccess(OUT);
-            }
-            else
-                printFail(OUT);
-        }
         else if (strcmp(cmds[0], "L") == 0) //LIST FILE
         {
             printFiles();
         }
         else if (strcmp(cmds[0], "S") == 0) //START REPORT
         {
-            logg("REPORT STARTED");
             startAReport();
             printSuccess(OUT);
         }
         else if (strcmp(cmds[0], "K") == 0) //KILL
         {
-            loggN(WRITE_C);
             sendKill(WRITE_C);
             logg("A killed");
             exit(0);
@@ -192,85 +174,49 @@ void readCommand()
 
 void addFile(char *f)
 {
-    if (files == NULL)
-    {
-        FileDataList *fd = (FileDataList *)malloc(sizeof(FileDataList));
-        fd->analysis = NULL;
-        fd->filename = (char *)malloc(MAX_PATH_LENGHT * sizeof(char));
-        strcpy(fd->filename, f);
-        files = fd;
-        return;
-    }
+    int i;
+    for (i = 0; i < filenamesLen; i++)
+        if (strcmp(filenames[i], f) == 0)
+            return;
 
-    FileDataList *curr = files;
-
-    if (curr != NULL)
-        do
-        {
-            if (strcmp(curr->filename, f) == 0)
-                return;
-            if (curr->next == NULL)
-                break;
-            curr = curr->next;
-        } while (true);
-
-    FileDataList *fd = (FileDataList *)malloc(sizeof(FileDataList));
-    fd->analysis = NULL;
-    fd->filename = (char *)malloc(MAX_PATH_LENGHT * sizeof(char));
-    strcpy(fd->filename, f);
-    curr->next = fd;
+    filenames = (char **)realloc(filenames, ++filenamesLen * sizeof(char *));
+    filenames[filenamesLen - 1] = malloc(MAX_PATH_LENGHT * sizeof(char));
+    strcpy(filenames[filenamesLen - 1], f);
 }
 
 void removeFile(char *f)
 {
-    FileDataList *prev = NULL;
-    FileDataList *curr = files;
-
-    while (curr != NULL)
-    {
-        if (strcmp(curr->filename, f) == 0)
-        {
-            if (prev == NULL)
-                files = curr->next;
-            else
-                prev->next = curr->next;
-
-            free(curr->analysis);
-            free(curr->filename);
-            free(curr);
+    int found;
+    for (found = 0; found < filenamesLen; found++)
+        if (strcmp(filenames[found], f) == 0)
             break;
-        }
 
-        prev = curr;
-        curr = curr->next;
-    }
-}
+    logg("FOUND");
+    loggN(found);
+    if (found == filenamesLen)
+        return;
 
-void toUpdateFile(char *f)
-{
-    FileDataList *curr = files;
+    char **temp = (char **)malloc((filenamesLen - 1) * sizeof(char *));
 
-    while (curr != NULL)
-    {
-        if (strcmp(curr->filename, f) == 0)
-        {
-            free(curr->analysis);
-            curr->analysis = NULL;
-            break;
-        }
-        curr = curr->next;
-    }
+    if (found != 0)
+        memcpy(temp, filenames, found * sizeof(char *));
+    if (found != (filenamesLen - 1))
+        memcpy(temp + found, filenames + found + 1, (filenamesLen - found - 1) * sizeof(char *));
+
+    filenamesLen--;
+    free(filenames[found]);
+    free(filenames);
+    filenames = temp;
 }
 
 void printFiles()
 {
-    FileDataList *curr = files;
-    while (curr != NULL)
+    int i;
+    for (i = 0; i < filenamesLen; i++)
     {
         //logg(curr->filename);
-        write(OUT, curr->filename, strlen(curr->filename));
+        write(OUT, filenames[i], strlen(filenames[i]));
         write(OUT, "\n", 1);
-        curr = curr->next;
     }
     write(OUT, "\n", 1);
 }
@@ -307,48 +253,96 @@ bool checkFileExist(char *f)
     return trovato;
 }
 
-
 // ----- REPORT STUFF -----
-void doReport();
+void *sendStuff();
+void *readStuff();
 
-void startAReport()
+char **toFindArg;
+int toFindArgLen = 0;
+
+bool startAReport()
 {
-    if (READ_REPORTER >= 0)
-    {
-        close(READ_REPORTER);
-    }
+    if (isReporting)
+        return false;
+    if (filenamesLen == 0)
+        return true;
 
-    int pipeToReport[2];
-    pipe(pipeToReport);
+    logg("NUMERI");
+    loggN(filenamesLen);
 
-    READ_REPORTER = pipeToReport[READ];
-    int WRITE_TO_PARENT = pipeToReport[WRITE];
+    toFindArgLen = filenamesLen + 2;
+    toFindArg = (char **)malloc(toFindArgLen * sizeof(char *));
+    int i;
+    for (i = 0; i < filenamesLen; i++)
+        toFindArg[i + 1] = filenames[i];
+    toFindArg[filenamesLen + 1] = NULL;
+
+    free(filenames);
+    filenamesLen = 0;
+    filenames = (char **)malloc(0);
 
     isReporting = true;
-    pid_t pid = fork();
-    if (pid == 0)
-    {
-        close(pipeToReport[READ]);
+    pthread_t thredSender, thredReciver;
+    pthread_create(&thredSender, NULL, sendStuff, NULL);
+    // pthread_create(&thredSender, NULL, readStuff, NULL);
 
-        doReport();
-
-        char resOK[2] = {RESPONSE_OK, '\n'};
-        write(WRITE_TO_PARENT, resOK, 2);
-        close(pipeToReport[WRITE]);
-        exit(0);
-    }
-    close(pipeToReport[WRITE]);
-    char res[2];
-    read(READ_REPORTER, res, 2);
-    isReporting = false;
-    logg("REPORT FINITO");
+    return true;
 }
 
-void doReport()
+void *sendStuff()
 {
-    //SET P & Q
+    // SET P & Q
     sendPandQ(WRITE_C, M, N);
 
+    int fd[2];
+    pipe(fd);
+    pid_t pid = fork();
 
+    if (pid == 0) //CHILD
+    {
+        close(fd[READ]);
+        dup2(fd[WRITE], STDOUT_FILENO);
+        dup2(open("/dev/null", O_WRONLY), STDERR_FILENO);
+        toFindArg[0] = "/usr/bin/find";
+        execv("/usr/bin/find", toFindArg);
+        error("EXEC ERROR");
+    }
+    else if (pid < 0)
+    {
+        error("FORK ERROR");
+    }
 
+    //PARENT
+    close(fd[WRITE]);
+    char line[MAX_PATH_LENGHT];
+    int letti;
+    char c;
+    int i = 0;
+    while ((letti = read(fd[READ], &c, 1)) > 0)
+    {
+        line[i] = c;
+        if (c == '\n')
+        {
+            line[i] = '\0';
+            if (i > 0)
+                sendFilename(WRITE_C, line, strlen(line));
+            i = 0;
+        }
+        i++;
+    }
+    logg("INVIATO REPORT");
+
+    close(fd[READ]);
+
+    //CLEAR
+    for (i = 0; i < toFindArgLen; i++)
+        free(toFindArg[i]);
+    free(toFindArg);
+    toFindArgLen = 0;
+
+    isReporting = false;
+}
+
+void *readStuff()
+{
 }

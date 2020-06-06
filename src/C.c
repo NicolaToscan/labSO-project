@@ -171,6 +171,8 @@ void resetP(const int write, const int read, const int qs)
 
 void killP(const int write, const int read)
 {
+    error("KILLING A P");
+    loggN(write);
     sendKill(write);
     //TODO close pipe
 }
