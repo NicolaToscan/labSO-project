@@ -19,22 +19,30 @@ typedef struct PData_s
 
 } PData;
 
-void startP(PData *pData, int qs);
-PData *resizePs(const int newN, int *nCurr, PData *P, int qs);
-void resetP(const int write, const int read, const int qs);
-void killP(const int write, const int read);
-void forwardFile(PData *P, int pLen, int *toSendFile);
-void updatePandQ(PData *P, int *nCurr, int *qs);
+bool startP(PData *pData);
+bool resizeP(int toAdd);
+void killP(PData *p);
+
+int P = 3;
+int Q = 4;
+PData *pDatas = NULL;
 
 int main(int argc, char *argv[])
 {
+    if (argc >= 2)
+        P = atoi(argv[1]);
+    if (argc >= 3)
+        Q = atoi(argv[2]);
+
+    if (P <= 0)
+        P = 3;
+    if (Q <= 0)
+        Q = 4;
+
+    resizeP(P);
+
     logg("C started");
 
-    int qs = 1;
-    int currentPs = 1;
-    int toSendFile = 0;
-    PData *P = calloc(currentPs, sizeof(PData));
-    startP(P, qs);
 
     while (true)
     {
@@ -43,7 +51,7 @@ int main(int argc, char *argv[])
         {
             //UPDATE Q and P
         case CMD_C_PandQ:
-            updatePandQ(P, &currentPs, &qs);
+            updatePandQ();
             clearLine(IN);
             break;
 
@@ -72,24 +80,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void updatePandQ(PData *P, int *nCurr, int *qs)
-{
-    int p, q;
-    readPandQ(IN, &p, &q);
-    resizePs(p, nCurr, P, q);
-    *qs = q;
-}
-
-void forwardFile(PData *P, int pLen, int *toSendFile)
-{
-    char filename[MAX_PATH_LENGHT];
-    int filenameLen = readFilename(IN, filename);
-
-    *toSendFile = (*toSendFile + 1) % pLen;
-    sendFilename(P[*toSendFile].write, filename, filenameLen);
-}
-
-void startP(PData *pData, int qs)
+bool startP(PData *pData)
 {
     int fdDOWN[2];
     pipe(fdDOWN);
@@ -105,7 +96,6 @@ void startP(PData *pData, int qs)
         pData->pid = pid;
         close(fdDOWN[READ]);
         close(fdUP[WRITE]);
-        resetP(pData->write, pData->read, qs);
     }
     else if (pid == 0) //Child
     {
@@ -115,64 +105,105 @@ void startP(PData *pData, int qs)
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
+        char Qstr[9];
+        sprintf(Qstr, "%d", Q);
+
         //close(fdDOWN[READ]);
         //close(fdUP[WRITE]);
-
-        if (execlp(FILENAME_P, FILENAME_P, (char *)NULL) < 0)
-        {
-            //TODO: handle exec error
-            error("EXEC error");
-        }
+        execlp(FILENAME_P, FILENAME_P, Qstr, (char *)NULL);
+        //TODO: handle exec error
+        error("EXEC error");
     }
     else
     {
         //TODO: handle fork error
         error("FORK error");
+        return false;
     }
+    return true;
 }
 
-PData *resizePs(const int newN, int *nCurr, PData *P, int qs)
+bool resizeP(int toAdd)
 {
-    //TODO: forse realloc
-    if (newN == *nCurr)
-        return P;
+    if (toAdd == 0)
+        return true;
 
-    PData *newP = (PData *)calloc(newN, sizeof(PData));
+    if (currentPData == NULL)
+    {
 
-    int toCopy = newN < *nCurr ? newN : *nCurr;
+        currentPData = (PData *)malloc(sizeof(PData));
+        if (!startP(currentPData))
+        {
+            free(currentPData);
+            currentPData = NULL;
+            return false;
+        }
+        currentPData->next = currentPData;
+        currentPData->prev = currentPData;
+    }
+
     int i = 0;
-    for (i = 0; i < toCopy; i++)
+    if (toAdd > 0)
     {
-        newP[i].read = P[i].read;
-        newP[i].write = P[i].write;
-        newP[i].pid = P[i].pid;
-        resetP(newP[i].write, newP[i].read, qs);
+        for (i = 0; i < toAdd; i++)
+        {
+            PData *nuovo = (PData *)malloc(sizeof(PData));
+            if (startP(currentPData))
+            {
+                nuovo->next = currentPData->next;
+                currentPData->next->prev = nuovo;
+                nuovo->prev = currentPData;
+                currentPData->next = nuovo;
+            }
+            {
+                free(currentPData);
+                currentPData = NULL;
+                return false;
+            }
+        }
     }
-
-    if (newN > *nCurr)
+    else
     {
-        for (; i < newN; i++)
-            startP(newP + i, qs);
+        toAdd *= -1;
+        for (i = 0; i < toAdd; i++)
+        {
+            killP(currentPData->next);
+            currentPData->next->next->prev = currentPData;
+            free(currentPData->next);
+            currentPData->next = currentPData->next->next;
+        }
     }
-    else //(n < nCurr)
-    {
-        for (; i < *nCurr; i++)
-            killP(P[i].write, P[i].read);
-    }
-    free(P);
-    *nCurr = newN;
-    return newP;
+    return true;
 }
 
-void resetP(const int write, const int read, const int qs)
+void updatePandQ()
 {
-    sendPQs(write, qs);
+    int p, q;
+    readPandQ(IN, &p, &q);
+    Q = q;
+
+     
+
+
+
+    resizePs(p - P);
+    P = p;
 }
 
-void killP(const int write, const int read)
+void killP(PData *p)
 {
-    error("KILLING A P");
-    loggN(write);
-    sendKill(write);
-    //TODO close pipe
+    sendKill(p->write);
+    close(p->write);
+    close(p->read);
 }
+
+
+void forwardFile(PData *P, int pLen, int *toSendFile)
+{
+    char filename[MAX_PATH_LENGHT];
+    int filenameLen = readFilename(IN, filename);
+
+    *toSendFile = (*toSendFile + 1) % pLen;
+    sendFilename(P[*toSendFile].write, filename, filenameLen);
+}
+

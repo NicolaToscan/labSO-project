@@ -267,9 +267,6 @@ bool startAReport()
     if (filenamesLen == 0)
         return true;
 
-    logg("NUMERI");
-    loggN(filenamesLen);
-
     toFindArgLen = filenamesLen + 2;
     toFindArg = (char **)malloc(toFindArgLen * sizeof(char *));
     int i;
