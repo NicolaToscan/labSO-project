@@ -12,14 +12,14 @@ Analysis initAnalysis()
     return a;
 }
 
-void printAnalysis(Analysis a)
+void printAnalysis(const int file, Analysis a)
 {
-    fprintf(stdout, "%d", a.val);
+    write(file, a.val, sizeof(int));
 }
 
 Analysis readAnalysis(const int file)
 {
     Analysis a;
-    a.val = 0;
+    read(file, a.val, sizeof(int));
     return a;
 }
