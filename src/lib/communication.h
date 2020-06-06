@@ -6,6 +6,7 @@
 
 void printSuccess(const int fd);
 void printFail(const int fd);
+bool readSimpleYNResponce(const int fd);
 void sendKill(const int fd);
 void sendQnumbers(const int fd, const int section, const int sections);
 void readQnumbers(const int fd, int *section, int *sections);

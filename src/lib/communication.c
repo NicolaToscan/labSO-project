@@ -16,6 +16,20 @@ void printFail(const int fd)
     write(fd, "N\n", 2 * sizeof(char));
 }
 
+bool readSimpleYNResponce(const int fd)
+{
+    char res[2];
+    int letti = read(fd, res, 2);
+    if (letti != 2)
+        return false;
+    
+    if (res[0] != RESPONSE_OK)
+        return false;
+    
+    return true;
+
+}
+
 void sendKill(const int fd)
 {
     char cmd[2] = {CMD_KILL, '\n'};

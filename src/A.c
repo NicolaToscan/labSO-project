@@ -25,6 +25,8 @@ int WRITE_C = 0;
 int READ_C = 0;
 int PID_C = 0;
 
+int READ_REPORTER = -1;
+bool isReporting = false;
 
 FileDataList *files = NULL;
 
@@ -34,6 +36,7 @@ void addFile(char *f);
 void removeFile(char *f);
 void toUpdateFile(char *f);
 void printFiles();
+void startAReport();
 
 int main(int argc, char *argv[])
 {
@@ -41,7 +44,7 @@ int main(int argc, char *argv[])
     logg("A started");
     while (true)
     {
-        printFiles();
+        //printFiles();
         readCommand();
     }
 }
@@ -92,6 +95,8 @@ void readCommand()
     size_t buffSize = MAX_CMD_LENGHT;
     char *inLine = NULL;
     int len = getline(&inLine, &buffSize, in);
+    if (len <= 1)
+        return;
     inLine[--len] = '\0';
     char **cmds = NULL;
     char *p = strtok(inLine, " ");
@@ -110,65 +115,73 @@ void readCommand()
     }
     optind = 1; //RESET COSO CHE LETTE OPTs
 
-    if (strcmp(cmds[0], "P") == 0)
+    if (num > 0)
     {
-        if (num == 3)
+        if (strcmp(cmds[0], "P") == 0)
         {
-            int m = atoi(cmds[1]);
-            int n = atoi(cmds[2]);
-            if (m > 0 && n > 0)
+            if (num == 3)
             {
-                N = n;
-                M = m;
+                int m = atoi(cmds[1]);
+                int n = atoi(cmds[2]);
+                if (m > 0 && n > 0)
+                {
+                    N = n;
+                    M = m;
+                    printSuccess(OUT);
+                }
+                else
+                    printFail(OUT);
+            }
+            else
+                printFail(OUT);
+        }
+        else if (strcmp(cmds[0], "A") == 0) //ADD FILE
+        {
+            if (num == 2)
+            {
+                addFile(cmds[1]);
                 printSuccess(OUT);
             }
             else
                 printFail(OUT);
         }
-        else
-            printFail(OUT);
-    }
-    else if (strcmp(cmds[0], "F") == 0) //ADD FILE
-    {
-        if (num == 2)
+        else if (strcmp(cmds[0], "R") == 0) //REMOVE FILE
         {
-            addFile(cmds[1]);
+            if (num == 2)
+            {
+                removeFile(cmds[1]);
+                printSuccess(OUT);
+            }
+            else
+                printFail(OUT);
+        }
+        else if (strcmp(cmds[0], "U") == 0) //TO UPDATE FILE
+        {
+            if (num == 2)
+            {
+                toUpdateFile(cmds[1]);
+                printSuccess(OUT);
+            }
+            else
+                printFail(OUT);
+        }
+        else if (strcmp(cmds[0], "S") == 0) //START REPORT
+        {
+            logg("REPORT STARTED");
+            startAReport();
             printSuccess(OUT);
         }
-        else
-            printFail(OUT);
-    }
-    else if (strcmp(cmds[0], "R") == 0) //REMOVE FILE
-    {
-        if (num == 2)
+        else if (strcmp(cmds[0], "K") == 0) //KILL
         {
-            removeFile(cmds[1]);
-            printSuccess(OUT);
+            sendKill(WRITE_C);
+            logg("A killed");
+            exit(0);
         }
         else
-            printFail(OUT);
-    }
-    else if (strcmp(cmds[0], "U") == 0) //TO UPDATE FILE
-    {
-        if (num == 2)
         {
-            toUpdateFile(cmds[1]);
-            printSuccess(OUT);
-        }
-        else
             printFail(OUT);
+        }
     }
-    else if (strcmp(cmds[0], "K") == 0) //KILL
-    {
-        sendKill(WRITE_C);
-        logg("A killed");
-        exit(0);
-    }
-    else
-    {
-        printFail(OUT);
-    }
-
     free(inLine);
     free(cmds);
 }
@@ -251,8 +264,45 @@ void printFiles()
     FileDataList *curr = files;
     while (curr != NULL)
     {
-        write(OUT, curr->filename, strlen(curr->filename));
-        write(OUT, "\n", 1);
+        logg(curr->filename);
+        // write(OUT, curr->filename, strlen(curr->filename));
+        // write(OUT, "\n", 1);
         curr = curr->next;
     }
+}
+
+void startAReport()
+{
+    if (READ_REPORTER >= 0)
+    {
+        close(READ_REPORTER);
+    }
+
+    int WRITE = 1;
+    int READ = 0;
+
+    int pipeToReport[2];
+    pipe(pipeToReport);
+
+    READ_REPORTER = pipeToReport[READ];
+    int WRITE_TO_PARENT = pipeToReport[WRITE];
+
+    isReporting = true;
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        close(pipeToReport[READ]);
+
+        // TODO: start report
+
+        char resOK[2] = {RESPONSE_OK, '\n'};
+        write(WRITE_TO_PARENT, resOK, 2);
+        close(pipeToReport[WRITE]);
+        exit(0);
+    }
+    close(pipeToReport[WRITE]);
+    char res[2];
+    read(READ_REPORTER, res, 2);
+    isReporting = false;
+    logg("REPORT FINITO");
 }

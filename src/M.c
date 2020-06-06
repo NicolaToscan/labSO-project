@@ -24,6 +24,8 @@ void file(int argc, char *argv[]);
 void setCmd(int argc, char *argv[]);
 void quit(int argc, char *argv[]);
 void help(int argc, char *argv[]);
+bool forwardFile(char type, char *filename);
+void doReport();
 
 int main(int argc, char *argv[])
 {
@@ -91,7 +93,6 @@ void readCommand()
     char **cmds = NULL;
     char *p = strtok(inLine, " ");
     int num = 0;
-
     while (p)
     {
         cmds = realloc(cmds, sizeof(char *) * ++num);
@@ -104,31 +105,33 @@ void readCommand()
         p = strtok(NULL, " ");
     }
     optind = 1; //RESET COSO CHE LETTE OPTs
-
-    if (strcmp(cmds[0], "set") == 0)
+    if (num > 0)
     {
-        setCmd(num, cmds);
-    }
-    else if (strcmp(cmds[0], "file") == 0)
-    {
-        file(num, cmds);
-    }
-    else if (strcmp(cmds[0], "report") == 0)
-    {
-        //TODO: report
-    }
-    else if (strcmp(cmds[0], "help") == 0)
-    {
-        help(num, cmds);
-    }
-    else if (strcmp(cmds[0], "quit") == 0)
-    {
-        sendKill(WRITE_A);
-        quit(num, cmds);
-    }
-    else
-    {
-        printf("Command '%s' not found, type help\n", cmds[0]);
+        if (strcmp(cmds[0], "set") == 0)
+        {
+            setCmd(num, cmds);
+        }
+        else if (strcmp(cmds[0], "file") == 0)
+        {
+            file(num, cmds);
+        }
+        else if (strcmp(cmds[0], "report") == 0)
+        {
+            doReport();
+        }
+        else if (strcmp(cmds[0], "help") == 0)
+        {
+            help(num, cmds);
+        }
+        else if (strcmp(cmds[0], "quit") == 0 || strcmp(cmds[0], "q") == 0)
+        {
+            sendKill(WRITE_A);
+            quit(num, cmds);
+        }
+        else
+        {
+            printf("Command '%s' not found, type help\n", cmds[0]);
+        }
     }
 
     free(inLine);
@@ -182,6 +185,14 @@ void setCmd(int argc, char *argv[])
         else
             M = m;
     }
+
+    char cmd[32];
+    sprintf(cmd, "P %d %d\n", M, N);
+    write(WRITE_A, cmd, strlen(cmd));
+    if (readSimpleYNResponce(READ_A))
+        printf("Values updated successfully\n");
+    else
+        printf("Couldn't update values\n");
 }
 
 void file(int argc, char *argv[])
@@ -197,6 +208,7 @@ void file(int argc, char *argv[])
             for (; optind < argc && *argv[optind] != '-'; optind++)
             {
                 logg(argv[optind]);
+                forwardFile('A', argv[optind]);
             }
             break;
 
@@ -206,6 +218,7 @@ void file(int argc, char *argv[])
             for (; optind < argc && *argv[optind] != '-'; optind++)
             {
                 logg(argv[optind]);
+                forwardFile('R', argv[optind]);
             }
             break;
 
@@ -215,6 +228,7 @@ void file(int argc, char *argv[])
             for (; optind < argc && *argv[optind] != '-'; optind++)
             {
                 logg(argv[optind]);
+                forwardFile('U', argv[optind]);
             }
             break;
 
@@ -232,6 +246,30 @@ void file(int argc, char *argv[])
             break;
         }
     }
+}
+
+bool forwardFile(char type, char *filename)
+{
+    char cmd[2] = {type, ' '};
+    write(WRITE_A, cmd, 2);
+    write(WRITE_A, filename, strlen(filename));
+    write(WRITE_A, "\n", 1);
+
+    bool res = readSimpleYNResponce(READ_A);
+    if (!res)
+        printf("File or directory '%s' not found\n", filename);
+    return res;
+}
+
+void doReport()
+{
+    write(WRITE_A, "S\n", strlen("S\n"));
+    if (readSimpleYNResponce(READ_A))
+        printf("Report started in background\n");
+    else
+        printf("Impossibile avviare il report\n");
+
+    
 }
 
 void help(int argc, char *argv[])
