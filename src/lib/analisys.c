@@ -8,9 +8,12 @@
 Analysis initAnalysis()
 {
     Analysis a;
-    
-    for(int i = 0; i < 9; i++)
+
+    int i;
+    for(i = 0; i < 9; i++)
+    {
         a.values[i] = 0;
+    }
 
     return a;
 }
@@ -19,7 +22,8 @@ void printAnalysis(const int file, Analysis a)
 {
     char buffer[9 * ULONG_MAXLEN];
 
-    for(int i = 0; i < 9; i++)
+    int i;
+    for(i = 0; i < 9; i++)
     {
         intToStr(a.values[i], buffer, i * ULONG_MAXLEN);
     }
@@ -34,7 +38,8 @@ Analysis readAnalysis(const int file)
 
     read(file, buffer, sizeof(buffer));
     
-    for(int i = 0; i < 9; i++)
+    int i;
+    for(i = 0; i < 9; i++)
     {
         a.values[i] = (buffer, i * ULONG_MAXLEN, a.values[i]);
     }
@@ -91,7 +96,7 @@ void intToStr(ulong value, char str[ULONG_MAXLEN])
 }
 
 // Forse inutile
-void strToInt(char str[ULONG_MAXLEN], ulong *value)
+ulong strToInt(char str[ULONG_MAXLEN])
 {
     ulong ul = 0;
     int index = 0;
@@ -103,7 +108,7 @@ void strToInt(char str[ULONG_MAXLEN], ulong *value)
         ul = (ul * 10) + atoi(c);
     }
 
-    *value = ul;
+    return ul;
 }
 
 bool isText(char c)         { return c >= ' ' && c <= '~'; }

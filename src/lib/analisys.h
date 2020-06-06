@@ -1,3 +1,5 @@
+#include "common.h"
+
 typedef unsigned long ulong;
 #define ULONG_MAXLEN 7
 
@@ -30,7 +32,7 @@ void intToStr(ulong value, char *str, int startIndex);
 ulong strToInt(char *str, int startIndex);
 
 void intToStr(ulong value, char str[ULONG_MAXLEN]); // Forse inutile
-void strToInt(char str[ULONG_MAXLEN], ulong *value); // Forse inutile
+ulong strToInt(char str[ULONG_MAXLEN]); // Forse inutile
 
 bool isText(char c);
 bool isUppLetter(char c);
