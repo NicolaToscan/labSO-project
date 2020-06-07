@@ -5,6 +5,7 @@
 #include <string.h>
 #include "common.h"
 #include "analisys.h"
+#include "filemanager.h"
 
 Analysis initAnalysis()
 {
@@ -39,7 +40,7 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
 	{
 		addCharAnalysis(a, (char)fgetc(file));
 	}
-	fclose(fp);
+	fclose(file);
 
     return a;
 }

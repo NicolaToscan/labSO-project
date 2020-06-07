@@ -7,7 +7,6 @@
 #include "lib/common.h"
 #include "lib/commands.h"
 #include "lib/communication.h"
-#include "lib/filemanager.h"
 
 #define IN STDIN_FILENO
 #define OUT STDOUT_FILENO
@@ -69,6 +68,6 @@ void doFile()
 	readFilename(IN, myFile);
 	clearLine(IN);
 
-	Analysis a = analyseFile(myFile, mySection, sections);
+	Analysis a = analyseFile(myFile, mySection, totSections);
 	printAnalysis(OUT, a);
 }

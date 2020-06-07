@@ -25,8 +25,3 @@ pair getFileRange(uint32 fileLength, int part, int totParts)
 
     return p;
 }
-
-pair getFilesRanges(uint32 fileLength, int part, int totParts)
-{
-    
-}

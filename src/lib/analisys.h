@@ -1,5 +1,3 @@
-// typedef unsigned long ulong;
-
 #define AN_UPPLT 0
 #define AN_LOWLT 1
 #define AN_NUMBR 2
@@ -12,7 +10,7 @@
 
 typedef struct Analysis_s
 {
-	uint32 values[9];
+	unsigned long values[9];
 } Analysis;
 
 Analysis initAnalysis();
