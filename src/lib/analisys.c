@@ -36,9 +36,11 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
 	fseek(file, 0, part.first);
 	Analysis a = initAnalysis();
 	int i = 0;
+
 	while(i < howmany)
 	{
-		addCharAnalysis(a, (char)fgetc(file));
+		addCharAnalysis(&a, (char)fgetc(file));
+        i++;
 	}
 	fclose(file);
 
@@ -48,40 +50,50 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
 void printAnalysis(const int file, Analysis a)
 {
     write(file, a.values, sizeof(a.values));
+    write(file, "\n", 1);
 }
 
 Analysis readAnalysis(const int file)
 {
     Analysis a;
     read(file, a.values, sizeof(a.values));
+
+    char aCapo;
+    read(file, &aCapo, 1);
+    
     return a;
 }
 
-void addCharAnalysis(Analysis a, char c)
+void addCharAnalysis(Analysis *a, char c)
 {
     if(isText(c))
     {
         if(isUppLetter(c))
-            a.values[AN_UPPLT]++;
+            a->values[AN_UPPLT]++;
         else if(isLowLetter(c))
-            a.values[AN_LOWLT]++;
+            a->values[AN_LOWLT]++;
         else if(isNumber(c))
-            a.values[AN_NUMBR]++;
+            a->values[AN_NUMBR]++;
         else if(isMathSymbol(c))
-            a.values[AN_MATHS]++;
+            a->values[AN_MATHS]++;
         else if(isPunctuation(c))
-            a.values[AN_PUNCT]++;
+            a->values[AN_PUNCT]++;
         else if(isBracket(c))
-            a.values[AN_BRCKT]++;
+            a->values[AN_BRCKT]++;
         else if(isSpace(c))
-            a.values[AN_SPACE]++;
+            a->values[AN_SPACE]++;
         else
-            a.values[AN_OTEXT]++;        
+            a->values[AN_OTEXT]++;        
     }
     else
     {
-        a.values[AN_OTHER]++;
+        a->values[AN_OTHER]++;
     }    
+}
+
+void printAnalysisReadable(Analysis a)
+{
+        fprintf(stderr, "%d - %d - %d - %d - %d - %d - %d - %d - %d\n", (int)a.values[0], (int)a.values[1], (int)a.values[2], (int)a.values[3], (int)a.values[4], (int)a.values[5], (int)a.values[6], (int)a.values[7], (int)a.values[8]);
 }
 
 int isText(char c)         { return (c >= ' ' && c <= '~')              ? 1 : 0; }
