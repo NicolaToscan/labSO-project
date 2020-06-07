@@ -1,0 +1,5 @@
+ alias fai='gcc -std=gnu90 src/lib/analisys.c src/lib/common.c src/lib/communication.c src/P.c -o bin/P.out && \
+ gcc -std=gnu90 src/lib/analisys.c src/lib/common.c src/lib/communication.c src/Q.c -o bin/Q.out && \
+ gcc -std=gnu90 src/lib/analisys.c src/lib/common.c src/lib/communication.c src/C.c -o bin/C.out && \
+ gcc -std=gnu90 src/lib/analisys.c src/lib/common.c src/lib/communication.c src/A.c -o bin/A.out && \
+ gcc -std=gnu90 src/lib/analisys.c src/lib/common.c src/lib/communication.c src/M.c -o bin/M.out'
