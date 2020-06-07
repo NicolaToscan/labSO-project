@@ -131,23 +131,28 @@ bool resizeP(int p)
     if (pDatasLen == p)
         return true;
 
+    PData *temp = (PData *)malloc(p * sizeof(PData));
     int i;
     if (p > pDatasLen)
     {
-        pDatas = (PData *)realloc(pDatas, p * sizeof(PData *));
+        for (i = 0; i < pDatasLen; i++)
+            temp[i] = pDatas[i];
         for (i = pDatasLen; i < p; i++)
-            startP(&(pDatas[i]));
+            startP(&(temp[i]));
     }
     else
     {
+        for (i = 0; i < p; i++)
+            temp[i] = pDatas[i];
         for (i = p; i < pDatasLen; i++)
             killP(pDatas[i]);
-        PData *temp = (PData *)malloc(p * sizeof(PData *));
-        memcpy(temp, pDatas, p * sizeof(PData *));
-        free(pDatas);
-        pDatas = temp;
     }
+
+    if (pDatas != NULL)
+        free(pDatas);
+    pDatas = temp;
     pDatasLen = p;
+    
     return true;
 }
 
@@ -183,4 +188,5 @@ bool forwardFile()
 
     sendFilename(pDatas[pRotation].write, filename, filenameLen);
     pRotation = (pRotation + 1) % pDatasLen;
+    return true;
 }

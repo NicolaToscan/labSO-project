@@ -90,5 +90,6 @@ void doFile()
 	fprintf(stderr, "%d) Ricevuto un file '%s'\n", mySection, myFile);
 	
 	Analysis a = analyseFile(myFile, mySection, totSections);
-	printAnalysis(STDERR_FILENO, a);
+	printAnalysisReadable(a);
+	//printAnalysis(STDERR_FILENO, a);
 }

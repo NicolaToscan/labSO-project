@@ -124,27 +124,30 @@ bool startQ(QData *qData, int i)
 
 bool resizeQ(int q)
 {
-    int i;
     if (qDatasLen == q)
         return true;
 
+    QData *temp = (QData *)malloc(q * sizeof(QData));
+    int i;
     if (q > qDatasLen)
     {
-        qDatas = (QData *)realloc(qDatas, q * sizeof(QData *));
+        for (i = 0; i < qDatasLen; i++)
+            temp[i] = qDatas[i];
+
         for (i = qDatasLen; i < q; i++)
-            startQ(&(qDatas[i]), i);
+            startQ(&(temp[i]), i);
     }
     else
     {
-        for (i = q; i < qDatasLen; i++)
-            killQ(qDatas[i], i);
-
-        QData *temp = (QData *)malloc(q * sizeof(QData *));
         for (i = 0; i < q; i++)
             temp[i] = qDatas[i];
-        free(qDatas);
-        qDatas = temp;
+        for (i = q; i < qDatasLen; i++)
+            killQ(qDatas[i], i);
     }
+    
+    if (qDatas != NULL)
+        free(qDatas);
+    qDatas = temp;
     qDatasLen = q;
 
     return true;
@@ -165,7 +168,6 @@ void updateQnumbers()
 
 void killQ(QData q, int i)
 {
-    fprintf(stderr, "%d) P killing %d - %d\n", i, q.write, getpid());
     sendKill(q.write);
     close(q.write);
     close(q.read);
@@ -182,9 +184,6 @@ bool forwardFile()
     int i = 0;
     for (i = 0; i < qDatasLen; i++)
     {
-
-        logg("Sending to");
-        loggN(qDatas[i].write);
         sendFilename(qDatas[i].write, filename, filenameLen);
     }
 }
