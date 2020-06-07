@@ -21,11 +21,15 @@ typedef struct PData_s
 
 bool startP(PData *pData);
 bool resizeP(int toAdd);
-void killP(PData *p);
+void killP(PData p);
+bool forwardFile();
+void updatePandQ();
 
 int P = 3;
 int Q = 4;
 PData *pDatas = NULL;
+int pDatasLen = 0;
+int pRotation = 0;
 
 int main(int argc, char *argv[])
 {
@@ -43,7 +47,6 @@ int main(int argc, char *argv[])
 
     logg("C started");
 
-
     while (true)
     {
         char cmd = readchar(IN);
@@ -57,14 +60,14 @@ int main(int argc, char *argv[])
 
             //FORWARD FILE
         case CMD_FILE:
-            forwardFile(P, currentPs, &toSendFile);
+            forwardFile();
             clearLine(IN);
             break;
 
             //KILL
         case CMD_KILL:
             clearLine(IN);
-            resizePs(0, &currentPs, P, qs);
+            resizeP(0);
             logg("C KILLED");
             exit(0);
             break;
@@ -123,56 +126,28 @@ bool startP(PData *pData)
     return true;
 }
 
-bool resizeP(int toAdd)
+bool resizeP(int p)
 {
-    if (toAdd == 0)
+    if (pDatasLen == p)
         return true;
 
-    if (currentPData == NULL)
+    int i;
+    if (p > pDatasLen)
     {
-
-        currentPData = (PData *)malloc(sizeof(PData));
-        if (!startP(currentPData))
-        {
-            free(currentPData);
-            currentPData = NULL;
-            return false;
-        }
-        currentPData->next = currentPData;
-        currentPData->prev = currentPData;
-    }
-
-    int i = 0;
-    if (toAdd > 0)
-    {
-        for (i = 0; i < toAdd; i++)
-        {
-            PData *nuovo = (PData *)malloc(sizeof(PData));
-            if (startP(currentPData))
-            {
-                nuovo->next = currentPData->next;
-                currentPData->next->prev = nuovo;
-                nuovo->prev = currentPData;
-                currentPData->next = nuovo;
-            }
-            {
-                free(currentPData);
-                currentPData = NULL;
-                return false;
-            }
-        }
+        pDatas = (PData *)realloc(pDatas, p * sizeof(PData *));
+        for (i = pDatasLen; i < p; i++)
+            startP(&(pDatas[i]));
     }
     else
     {
-        toAdd *= -1;
-        for (i = 0; i < toAdd; i++)
-        {
-            killP(currentPData->next);
-            currentPData->next->next->prev = currentPData;
-            free(currentPData->next);
-            currentPData->next = currentPData->next->next;
-        }
+        for (i = p; i < pDatasLen; i++)
+            killP(pDatas[i]);
+        PData *temp = (PData *)malloc(p * sizeof(PData *));
+        memcpy(temp, pDatas, p * sizeof(PData *));
+        free(pDatas);
+        pDatas = temp;
     }
+    pDatasLen = p;
     return true;
 }
 
@@ -181,29 +156,31 @@ void updatePandQ()
     int p, q;
     readPandQ(IN, &p, &q);
     Q = q;
-
-     
-
-
-
-    resizePs(p - P);
     P = p;
+
+    int toUpdate = (p < pDatasLen) ? p : pDatasLen;
+    int i = 0;
+    for (i = 0; i < toUpdate; i++)
+        sendPQs(pDatas[i].write, Q);
+
+    resizePs(P);
 }
 
-void killP(PData *p)
+void killP(PData p)
 {
-    sendKill(p->write);
-    close(p->write);
-    close(p->read);
+    sendKill(p.write);
+    close(p.write);
+    close(p.read);
 }
 
-
-void forwardFile(PData *P, int pLen, int *toSendFile)
+bool forwardFile()
 {
+    if (pDatasLen == 0)
+        return false;
+
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
 
-    *toSendFile = (*toSendFile + 1) % pLen;
-    sendFilename(P[*toSendFile].write, filename, filenameLen);
+    pRotation = (pRotation + 1) % pDatasLen;
+    sendFilename(pDatas[pDatasLen].write, filename, filenameLen);
 }
-
