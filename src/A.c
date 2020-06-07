@@ -283,7 +283,7 @@ bool startAReport()
     isReporting = true;
     pthread_t thredSender, thredReciver;
     pthread_create(&thredSender, NULL, sendStuff, NULL);
-    // pthread_create(&thredSender, NULL, readStuff, NULL);
+    pthread_create(&thredSender, NULL, readStuff, NULL);
 
     return true;
 }
@@ -311,7 +311,9 @@ void *sendStuff()
         error("FORK ERROR");
     }
 
-    //PARENT
+    //START LA COSA CHE MAND INDIETRO
+    sendStartC(WRITE_C);
+
     close(fd[WRITE]);
     char line[MAX_PATH_LENGHT];
     int letti;
@@ -330,8 +332,7 @@ void *sendStuff()
         else
             i++;
     }
-    logg("INVIATO REPORT");
-
+    sendFine(WRITE_C);
     close(fd[READ]);
 
     //CLEAR
@@ -345,4 +346,22 @@ void *sendStuff()
 
 void *readStuff()
 {
+    return;
+    // error("START READING");
+    char filename[MAX_PATH_LENGHT];
+
+    char cmd = 'F';
+    read(READ_C, &cmd, 1);
+
+    do
+    {
+        int letti = readFilename(READ_C, filename);
+        Analysis a = readAnalysis(READ_C);
+        error(filename);
+        printAnalysisReadable(a);
+        read(READ_C, &cmd, 1);
+    } while (cmd == CMD_FILE);
+
+    read(READ_C, &cmd, 1); // READ \n
+    error("FINITO");
 }

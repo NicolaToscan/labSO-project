@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
     while (true)
     {
         char cmd = readchar(IN);
+        //fprintf(stderr, " ---- P COMANDO: %c-%d\n", cmd, getpid());
 
         switch (cmd)
         {
@@ -51,10 +52,15 @@ int main(int argc, char *argv[])
             clearLine(IN);
             break;
 
+        case CMD_END:
+            clearLine(IN);
+            fprintf(stderr, "P ha ricevuto la fine -%d\n", getpid());
+            sendFine(OUT);
+            break;
+
             //FORWARD FILE
         case CMD_FILE:
             forwardFile();
-            clearLine(IN);
             break;
 
             //KILL
@@ -69,6 +75,8 @@ int main(int argc, char *argv[])
         default:
             clearLine(IN);
             logg("CMD NOT FOUND DA P");
+            fprintf(stderr, "The char is %c.\n", cmd);
+            loggC(cmd);
             exit(0);
             break;
         }
@@ -181,19 +189,23 @@ bool forwardFile()
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
 
+
     //SEND
     int i = 0;
     for (i = 0; i < qDatasLen; i++)
         sendFilename(qDatas[i].write, filename, filenameLen);
 
     //READ
-    Analysis tot;
+    Analysis tot = initAnalysis();
     for (i = 0; i < qDatasLen; i++)
     {
         Analysis a = readAnalysis(qDatas[i].read);
-        tot = a; // SUM
-        //printAnalysisReadable(a);
+        sumAnalysis(&tot, a);
     }
 
+    //RESPONSE
+    fprintf(stderr, "P sta mandando indietro i risultati di %s-%d\n", filename, getpid());
+    sendFilename(OUT, filename, filenameLen);
     printAnalysis(OUT, tot);
+    return true;
 }

@@ -24,12 +24,14 @@ bool resizeP(int toAdd);
 void killP(PData p);
 bool forwardFile();
 void updatePandQ();
+void *forwardUpReports();
 
 int P = 3;
 int Q = 4;
 PData *pDatas = NULL;
 int pDatasLen = 0;
 int pRotation = 0;
+int pReadRotation = 0;
 
 int main(int argc, char *argv[])
 {
@@ -50,6 +52,8 @@ int main(int argc, char *argv[])
     while (true)
     {
         char cmd = readchar(IN);
+        //fprintf(stderr, " -- C COMANDO: %c-%d\n", cmd, getpid());
+
         switch (cmd)
         {
             //UPDATE Q and P
@@ -58,10 +62,23 @@ int main(int argc, char *argv[])
             clearLine(IN);
             break;
 
+            //START SENDING BACK RESULTS
+        case CMD_START:
+            clearLine(IN);
+            pthread_t th;
+            pRotation = pReadRotation;
+            pthread_create(&th, NULL, forwardUpReports, NULL);
+            break;
+
             //FORWARD FILE
         case CMD_FILE:
             forwardFile();
+            break;
+
+        case CMD_END:
             clearLine(IN);
+            sendFine(pDatas[pRotation].write);
+            pRotation = 0;
             break;
 
             //KILL
@@ -74,6 +91,7 @@ int main(int argc, char *argv[])
 
             //CLEAR LINE
         default:
+            fprintf(stderr, "il char è:%c--\n", cmd);
             clearLine(IN);
             logg("CMD NOT FOUND DA C");
             break;
@@ -152,7 +170,7 @@ bool resizeP(int p)
         free(pDatas);
     pDatas = temp;
     pDatasLen = p;
-    
+
     return true;
 }
 
@@ -185,8 +203,37 @@ bool forwardFile()
 
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
-
+    fprintf(stderr, "C sta mandando %s\n", filename);
     sendFilename(pDatas[pRotation].write, filename, filenameLen);
+
     pRotation = (pRotation + 1) % pDatasLen;
     return true;
+}
+
+void *forwardUpReports()
+{
+    logg("START READING RESPONSES FROM IN C");
+    char filename[MAX_PATH_LENGHT];
+
+    char cmd = 'P';
+    while (true)
+    {
+        read(pDatas[pReadRotation].read, &cmd, 1);
+        if (cmd == CMD_END)
+        {
+            read(pDatas[pReadRotation].read, &cmd, 1); // READ \n
+            error("FINITO C");
+            sendFine(OUT);
+            return;
+        }
+        else if (cmd == CMD_FILE)
+        {
+            int filenameLen = readFilename(pDatas[pReadRotation].read, filename);
+            logg(filename);
+            Analysis a = readAnalysis(pDatas[pReadRotation].read);
+            sendFilename(OUT, filename, filenameLen);
+            printAnalysis(OUT, a);
+        }
+        pReadRotation = (pReadRotation + 1) % pDatasLen;
+    }
 }

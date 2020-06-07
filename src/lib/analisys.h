@@ -8,6 +8,8 @@
 #define AN_OTEXT 7
 #define AN_OTHER 8
 
+#define ANAL_LENGTH 9
+
 typedef struct Analysis_s
 {
 	unsigned long values[9];
@@ -31,3 +33,4 @@ int isPunctuation(char c);
 int isBracket(char c);
 int isSpace(char c);
 void printAnalysisReadable(Analysis a);
+void sumAnalysis(Analysis *res, Analysis a);

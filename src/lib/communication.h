@@ -16,4 +16,5 @@ void sendPQs(const int fd, const int qs);
 int readPQs(const int fd);
 void sendPandQ(const int fd, const int P, const int Q);
 void readPandQ(const int fd, int *P, int *Q);
-
+void sendStartC(const int fd);
+void sendFine(const int fd);

@@ -40,15 +40,20 @@ void sendFilename(const int fd, char *filename, int len)
     char cmd = CMD_FILE;
     write(fd, &cmd, sizeof(char));
     write(fd, &len, sizeof(int));
-    write(fd, filename, len * sizeof(char));
+    if (len > 0)
+        write(fd, filename, len * sizeof(char));
     write(fd, "\n", 1 * sizeof(char));
 }
 int readFilename(const int fd, char *filename)
 {
     int len;
     read(fd, &len, sizeof(int));
-    read(fd, filename, len * sizeof(char));
+    if (len != 0)
+        read(fd, filename, len * sizeof(char));
     filename[len] = '\0';
+
+    char slashenne;
+    read(fd, &slashenne, 1 * sizeof(char));
     return len;
 }
 
@@ -94,4 +99,16 @@ void readPandQ(const int fd, int *P, int *Q)
 {
     read(fd, P, sizeof(int));
     read(fd, Q, sizeof(int));
+}
+
+void sendStartC(const int fd)
+{
+    char cmds[2] = {CMD_START, '\n'};
+    write(fd, cmds, 2);
+}
+
+void sendFine(const int fd)
+{
+    char cmds[2] = {CMD_END, '\n'};
+    write(fd, cmds, 2);
 }
