@@ -50,12 +50,17 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
 void printAnalysis(const int file, Analysis a)
 {
     write(file, a.values, sizeof(a.values));
+    write(file, "\n", 1);
 }
 
 Analysis readAnalysis(const int file)
 {
     Analysis a;
     read(file, a.values, sizeof(a.values));
+
+    char aCapo;
+    read(file, &aCapo, 1);
+    
     return a;
 }
 

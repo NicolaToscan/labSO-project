@@ -144,7 +144,7 @@ bool resizeQ(int q)
         for (i = q; i < qDatasLen; i++)
             killQ(qDatas[i], i);
     }
-    
+
     if (qDatas != NULL)
         free(qDatas);
     qDatas = temp;
@@ -181,9 +181,19 @@ bool forwardFile()
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
 
+    //SEND
     int i = 0;
     for (i = 0; i < qDatasLen; i++)
-    {
         sendFilename(qDatas[i].write, filename, filenameLen);
+
+    //READ
+    Analysis tot;
+    for (i = 0; i < qDatasLen; i++)
+    {
+        Analysis a = readAnalysis(qDatas[i].read);
+        tot = a; // SUM
+        //printAnalysisReadable(a);
     }
+
+    printAnalysis(OUT, tot);
 }

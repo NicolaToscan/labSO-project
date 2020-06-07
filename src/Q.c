@@ -87,9 +87,8 @@ void doFile()
 	readFilename(IN, myFile);
 	clearLine(IN);
 
-	fprintf(stderr, "%d) Ricevuto un file '%s'\n", mySection, myFile);
+	fprintf(stderr, "%d) Q: Ricevuto un file '%s'\n", mySection, myFile);
 	
 	Analysis a = analyseFile(myFile, mySection, totSections);
-	printAnalysisReadable(a);
-	//printAnalysis(STDERR_FILENO, a);
+	printAnalysis(OUT, a);
 }
