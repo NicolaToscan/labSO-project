@@ -295,7 +295,28 @@ void doReport()
 
 void help(int argc, char *argv[])
 {
-    printf("NO\n");
+    printf("\n");
+    printf(" set: \n");
+    printf("  set [-p numberofP] [-q numberofQ] \n");
+    printf("  edit p and q \n");
+    printf("  options:\n");
+    printf("    -p numberofP edit the number of P \n");
+    printf("    -q numberofQ edit the number of Q \n\n");
+    printf(" file: \n");
+    printf("  file [-a filepath] [-r filepath] [-u filepath] [-l] \n");
+    printf("  manage files\n");
+    printf("  options:\n");
+    printf("   -a filepath add a file \n");
+    printf("   -r filepath remove a file \n");
+    printf("   -u filepath recheck file\n");
+    printf("   -l print the added files \n\n");
+    printf(" report: \n");
+    printf("  report\n");
+    printf("  starts the report \n\n");
+    printf(" quit: \n");
+    printf("  quit \n");
+    printf("  kill all the process and quit \n");
+
 }
 
 void quit(int argc, char *argv[])
