@@ -15,8 +15,8 @@ int WRITE_A = 0;
 int READ_A = 0;
 int PID_A = 0;
 
-int N = 1;
-int M = 1;
+int P = 3;
+int Q = 4;
 
 void startA();
 void readCommand();
@@ -138,27 +138,27 @@ void readCommand()
 void setCmd(int argc, char *argv[])
 {
 
-    bool nSet = false, mSet = false;
-    int n = 0, m = 0;
+    bool pSet = false, qSet = false;
+    int p = 0, q = 0;
     char c;
-    while ((c = getopt(argc, argv, "n:m:")) != -1)
+    while ((c = getopt(argc, argv, "p:q:")) != -1)
     {
         switch (c)
         {
-        case 'n':
-            nSet = true;
-            n = atoi(optarg);
+        case 'p':
+            pSet = true;
+            p = atoi(optarg);
             break;
-        case 'm':
-            mSet = true;
-            m = atoi(optarg);
+        case 'q':
+            qSet = true;
+            q = atoi(optarg);
             break;
 
         case '?':
-            if (optopt == 'm')
-                printf("set: argument for 'm' not found\n");
-            else if (optopt == 'n')
-                printf("set: argument for 'n' not found\n");
+            if (optopt == 'q')
+                printf("set: argument for 'q' not found\n");
+            else if (optopt == 'p')
+                printf("set: argument for 'p' not found\n");
 
             break;
 
@@ -167,24 +167,24 @@ void setCmd(int argc, char *argv[])
         }
     }
 
-    if (nSet)
+    if (pSet)
     {
-        if (n <= 0)
+        if (p <= 0)
             printf("set: argument for 'n' not valid\n");
         else
-            N = n;
+            P = p;
     }
 
-    if (mSet)
+    if (qSet)
     {
-        if (m <= 0)
+        if (q <= 0)
             printf("set: argument for 'm' not valid\n");
         else
-            M = m;
+            Q = q;
     }
 
     char cmd[32];
-    sprintf(cmd, "P %d %d\n", M, N);
+    sprintf(cmd, "P %d %d\n", P, Q);
     write(WRITE_A, cmd, strlen(cmd));
     if (readSimpleYNResponce(READ_A))
         printf("Values updated successfully\n");

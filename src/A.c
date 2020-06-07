@@ -15,8 +15,8 @@
 char **filenames;
 int filenamesLen = 0;
 
-int N = 1;
-int M = 1;
+int P = 3;
+int Q = 4;
 
 int WRITE_C = 0;
 int READ_C = 0;
@@ -67,7 +67,12 @@ void startC()
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-        if (execlp(FILENAME_C, FILENAME_C, "3", "4", (char *)NULL) < 0)
+        char Pstr[9];
+        sprintf(Pstr, "%d", P);
+        char Qstr[9];
+        sprintf(Qstr, "%d", Q);
+
+        if (execlp(FILENAME_C, FILENAME_C, Pstr, Qstr, (char *)NULL) < 0)
         {
             //TODO: handle exec error
             error("EXEC error");
@@ -111,12 +116,12 @@ void readCommand()
         {
             if (num == 3)
             {
-                int m = atoi(cmds[1]);
-                int n = atoi(cmds[2]);
-                if (m > 0 && n > 0)
+                int p = atoi(cmds[1]);
+                int q = atoi(cmds[2]);
+                if (p > 0 && q > 0)
                 {
-                    N = n;
-                    M = m;
+                    P = p;
+                    Q = q;
                     printSuccess(OUT);
                 }
                 else
@@ -286,7 +291,7 @@ bool startAReport()
 void *sendStuff()
 {
     // SET P & Q
-    sendPandQ(WRITE_C, M, N);
+    sendPandQ(WRITE_C, P, Q);
 
     int fd[2];
     pipe(fd);
