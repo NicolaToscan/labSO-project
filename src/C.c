@@ -163,7 +163,7 @@ void updatePandQ()
     for (i = 0; i < toUpdate; i++)
         sendPQs(pDatas[i].write, Q);
 
-    resizePs(P);
+    resizeP(P);
 }
 
 void killP(PData p)

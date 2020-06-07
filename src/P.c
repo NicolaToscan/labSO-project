@@ -19,19 +19,25 @@ typedef struct QData_s
 
 } QData;
 
-void startQ(QData *qData, const int section, const int sections);
-QData *resizeQs(const int newN, int *nCurr, QData *Q);
-void resetQ(const int write, const int read, const int section, const int sections);
-void killQ(const int write, const int read);
-void forwardFile(QData *Q, int qLen);
+bool startQ(QData *qData, int i);
+bool resizeQ(int q);
+void updateQnumbers();
+void killQ(QData q);
+bool forwardFile();
+
+int Q = 4;
+QData *qDatas = NULL;
+int qDatasLen = 0;
 
 int main(int argc, char *argv[])
 {
-    logg("P started");
+    if (argc >= 2)
+        Q = atoi(argv[1]);
+    if (Q <= 0)
+        Q = 4;
 
-    int currentQs = 1;
-    QData *Q = calloc(currentQs, sizeof(QData));
-    startQ(Q, 1, 1);
+    resizeQ(Q);
+    logg("P started");
 
     while (true)
     {
@@ -41,20 +47,20 @@ int main(int argc, char *argv[])
         {
             //UPDATE Qs
         case CMD_P_Qs:
-            resizeQs(readPQs(IN), &currentQs, Q);
+            updateQnumbers();
             clearLine(IN);
             break;
 
             //FORWARD FILE
         case CMD_FILE:
-            forwardFile(Q, currentQs);
+            forwardFile();
             clearLine(IN);
             break;
 
             //KILL
         case CMD_KILL:
             clearLine(IN);
-            resizeQs(0, &currentQs, Q);
+            resizeQ(0);
             logg("P KILLED");
             exit(0);
             break;
@@ -71,17 +77,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void forwardFile(QData *Q, int qLen)
-{
-    char filename[MAX_PATH_LENGHT];
-    int filenameLen = readFilename(IN, filename);
-
-    int i = 0;
-    for (i = 0; i < qLen; i++)
-        sendFilename(Q[i].write, filename, filenameLen);
-}
-
-void startQ(QData *qData, const int section, const int sections)
+bool startQ(QData *qData, int i)
 {
     int fdDOWN[2];
     pipe(fdDOWN);
@@ -97,7 +93,6 @@ void startQ(QData *qData, const int section, const int sections)
         qData->pid = pid;
         close(fdDOWN[READ]);
         close(fdUP[WRITE]);
-        resetQ(qData->write, qData->read, section, sections);
     }
     else if (pid == 0) //Child
     {
@@ -107,68 +102,80 @@ void startQ(QData *qData, const int section, const int sections)
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
+        char Istr[9];
+        sprintf(Istr, "%d", i);
+        char Qstr[9];
+        sprintf(Qstr, "%d", Q);
+
         //close(fdDOWN[READ]);
         //close(fdUP[WRITE]);
-
-        if (execlp(FILENAME_Q, FILENAME_Q, (char *)NULL) < 0)
-        {
-            //TODO: handle exec error
-            error("EXEC error");
-        }
+        execlp(FILENAME_Q, FILENAME_Q, Istr, Qstr, (char *)NULL);
+        //TODO: handle exec error
+        error("EXEC error");
     }
     else
     {
         //TODO: handle fork error
         error("FORK error");
+        return false;
     }
+    return true;
 }
 
-QData *resizeQs(const int newN, int *nCurr, QData *Q)
+bool resizeQ(int q)
 {
-    //TODO: forse realloc
-    if (newN == *nCurr)
-        return Q;
+    if (qDatasLen == q)
+        return true;
 
-    QData *newQ = (QData *)calloc(newN, sizeof(QData));
+    int i;
+    if (q > qDatasLen)
+    {
+        qDatas = (QData *)realloc(qDatas, q * sizeof(QData *));
+        for (i = qDatasLen; i < q; i++)
+            startQ(&(qDatas[i]), i);
+    }
+    else
+    {
+        for (i = q; i < qDatasLen; i++)
+            killQ(qDatas[i]);
+        QData *temp = (QData *)malloc(q * sizeof(QData *));
+        memcpy(temp, qDatas, q * sizeof(QData *));
+        free(qDatas);
+        qDatas = temp;
+    }
+    qDatasLen = q;
+    return true;
+}
 
-    int toCopy = newN < *nCurr ? newN : *nCurr;
+void updateQnumbers()
+{
+    int q = readPQs(IN);
+    Q = q;
+
+    int toUpdate = (q < qDatasLen) ? q : qDatasLen;
     int i = 0;
-    for (i = 0; i < toCopy; i++)
-    {
-        newQ[i].read = Q[i].read;
-        newQ[i].write = Q[i].write;
-        newQ[i].pid = Q[i].pid;
-        resetQ(newQ[i].write, newQ[i].read, i + 1, newN);
-    }
+    for (i = 0; i < toUpdate; i++)
+        sendQnumbers(qDatas[i].write, i, q);
 
-    if (newN > *nCurr)
-    {
-        for (; i < newN; i++)
-            startQ(newQ + i, i + 1, newN);
-    }
-    else //(n < nCurr)
-    {
-        for (; i < *nCurr; i++)
-            killQ(Q[i].write, Q[i].read);
-    }
-    free(Q);
-    *nCurr = newN;
-    return newQ;
+    resizeQ(Q);
 }
 
-void resetQ(const int write, const int read, const int section, const int sections)
+void killQ(QData q)
 {
-    if (section > sections)
-    {
-        error("Index bigger that range");
-        exit(12345); //TODO: fix
-    }
-
-    sendQnumbers(write, section, sections);
+    sendKill(q.write);
+    close(q.write);
+    close(q.read);
 }
 
-void killQ(const int write, const int read)
+bool forwardFile()
 {
-    sendKill(write);
-    //TODO close pipe
+    if (qDatasLen == 0)
+        return false;
+
+    char filename[MAX_PATH_LENGHT];
+    int filenameLen = readFilename(IN, filename);
+
+    int i = 0;
+    for (i = 0; i < qDatasLen; i++)
+        sendFilename(qDatas[i].write, filename, filenameLen);
 }

@@ -35,13 +35,10 @@ bool checkFileExist(char *f);
 
 int main(int argc, char *argv[])
 {
-    //startC();
+    startC();
     logg("A started");
     while (true)
-    {
-        //printFiles();
         readCommand();
-    }
     return 0;
 }
 
@@ -70,7 +67,7 @@ void startC()
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-        if (execlp(FILENAME_C, FILENAME_C, (char *)NULL) < 0)
+        if (execlp(FILENAME_C, FILENAME_C, "3", "4", (char *)NULL) < 0)
         {
             //TODO: handle exec error
             error("EXEC error");
