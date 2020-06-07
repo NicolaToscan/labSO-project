@@ -66,7 +66,8 @@ int main(int argc, char *argv[])
         case CMD_START:
             clearLine(IN);
             pthread_t th;
-            pRotation = pReadRotation;
+            pRotation = 0;
+            pReadRotation = 0;
             pthread_create(&th, NULL, forwardUpReports, NULL);
             break;
 
@@ -91,7 +92,6 @@ int main(int argc, char *argv[])
 
             //CLEAR LINE
         default:
-            fprintf(stderr, "il char è:%c--\n", cmd);
             clearLine(IN);
             logg("CMD NOT FOUND DA C");
             break;
@@ -203,7 +203,6 @@ bool forwardFile()
 
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
-    fprintf(stderr, "C sta mandando %s\n", filename);
     sendFilename(pDatas[pRotation].write, filename, filenameLen);
 
     pRotation = (pRotation + 1) % pDatasLen;
@@ -212,7 +211,6 @@ bool forwardFile()
 
 void *forwardUpReports()
 {
-    logg("START READING RESPONSES FROM IN C");
     char filename[MAX_PATH_LENGHT];
 
     char cmd = 'P';
@@ -222,14 +220,12 @@ void *forwardUpReports()
         if (cmd == CMD_END)
         {
             read(pDatas[pReadRotation].read, &cmd, 1); // READ \n
-            error("FINITO C");
             sendFine(OUT);
             return;
         }
         else if (cmd == CMD_FILE)
         {
             int filenameLen = readFilename(pDatas[pReadRotation].read, filename);
-            logg(filename);
             Analysis a = readAnalysis(pDatas[pReadRotation].read);
             sendFilename(OUT, filename, filenameLen);
             printAnalysis(OUT, a);

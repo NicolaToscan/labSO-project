@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
 
         case CMD_END:
             clearLine(IN);
-            fprintf(stderr, "P ha ricevuto la fine -%d\n", getpid());
             sendFine(OUT);
             break;
 
@@ -75,8 +74,6 @@ int main(int argc, char *argv[])
         default:
             clearLine(IN);
             logg("CMD NOT FOUND DA P");
-            fprintf(stderr, "The char is %c.\n", cmd);
-            loggC(cmd);
             exit(0);
             break;
         }
@@ -204,7 +201,6 @@ bool forwardFile()
     }
 
     //RESPONSE
-    fprintf(stderr, "P sta mandando indietro i risultati di %s-%d\n", filename, getpid());
     sendFilename(OUT, filename, filenameLen);
     printAnalysis(OUT, tot);
     return true;

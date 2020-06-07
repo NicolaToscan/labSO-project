@@ -86,8 +86,6 @@ void doFile()
 	char myFile[MAX_PATH_LENGHT];
 	readFilename(IN, myFile);
 
-	//fprintf(stderr, "%d) Q: Ricevuto un file '%s'\n", mySection, myFile);
-	
 	Analysis a = analyseFile(myFile, mySection, totSections);
 	printAnalysis(OUT, a);
 }

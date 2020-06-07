@@ -193,8 +193,6 @@ void removeFile(char *f)
         if (strcmp(filenames[found], f) == 0)
             break;
 
-    logg("FOUND");
-    loggN(found);
     if (found == filenamesLen)
         return;
 
@@ -216,7 +214,6 @@ void printFiles()
     int i;
     for (i = 0; i < filenamesLen; i++)
     {
-        //logg(curr->filename);
         write(OUT, filenames[i], strlen(filenames[i]));
         write(OUT, "\n", 1);
     }
@@ -346,22 +343,26 @@ void *sendStuff()
 
 void *readStuff()
 {
-    return;
-    // error("START READING");
-    char filename[MAX_PATH_LENGHT];
+    error("START LISTENING IN A");
 
     char cmd = 'F';
-    read(READ_C, &cmd, 1);
-
-    do
+    char filename[MAX_PATH_LENGHT];
+    while (true)
     {
-        int letti = readFilename(READ_C, filename);
-        Analysis a = readAnalysis(READ_C);
-        error(filename);
-        printAnalysisReadable(a);
         read(READ_C, &cmd, 1);
-    } while (cmd == CMD_FILE);
+        if (cmd == CMD_END)
+        {
+            read(READ_C, &cmd, 1); // READ \n
+            break;
+        }
+        else if (cmd == CMD_FILE)
+        {
+            int filenameLen = readFilename(READ_C, filename);
+            Analysis a = readAnalysis(READ_C);
+            error(filename);
+            printAnalysisReadable(a);
+        }
+    }
 
-    read(READ_C, &cmd, 1); // READ \n
-    error("FINITO");
+    error("FINITO DA A");
 }
