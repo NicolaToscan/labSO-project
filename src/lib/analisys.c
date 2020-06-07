@@ -24,6 +24,9 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
     FILE *file;
 	file = fopen(fileName, "r");
 
+    // ATTENZIONE POSSIBILE CASINO
+    // FORSE VA RIDOTTA LA LENGTH PER TOGLIERE IL CHAR EOF
+
 	fseek(file, 0, SEEK_END);
 	int fileLength = ftell(file);
 	pair part = getFileRange(fileLength, mySection, totSections);
