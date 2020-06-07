@@ -181,6 +181,6 @@ bool forwardFile()
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
 
+    sendFilename(pDatas[pRotation].write, filename, filenameLen);
     pRotation = (pRotation + 1) % pDatasLen;
-    sendFilename(pDatas[pDatasLen].write, filename, filenameLen);
 }

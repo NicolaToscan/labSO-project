@@ -22,7 +22,7 @@ typedef struct QData_s
 bool startQ(QData *qData, int i);
 bool resizeQ(int q);
 void updateQnumbers();
-void killQ(QData q);
+void killQ(QData q, int i);
 bool forwardFile();
 
 int Q = 4;
@@ -103,7 +103,7 @@ bool startQ(QData *qData, int i)
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
         char Istr[9];
-        sprintf(Istr, "%d", i);
+        sprintf(Istr, "%d", i + 1);
         char Qstr[9];
         sprintf(Qstr, "%d", Q);
 
@@ -124,10 +124,10 @@ bool startQ(QData *qData, int i)
 
 bool resizeQ(int q)
 {
+    int i;
     if (qDatasLen == q)
         return true;
 
-    int i;
     if (q > qDatasLen)
     {
         qDatas = (QData *)realloc(qDatas, q * sizeof(QData *));
@@ -137,13 +137,16 @@ bool resizeQ(int q)
     else
     {
         for (i = q; i < qDatasLen; i++)
-            killQ(qDatas[i]);
+            killQ(qDatas[i], i);
+
         QData *temp = (QData *)malloc(q * sizeof(QData *));
-        memcpy(temp, qDatas, q * sizeof(QData *));
+        for (i = 0; i < q; i++)
+            temp[i] = qDatas[i];
         free(qDatas);
         qDatas = temp;
     }
     qDatasLen = q;
+
     return true;
 }
 
@@ -160,8 +163,9 @@ void updateQnumbers()
     resizeQ(Q);
 }
 
-void killQ(QData q)
+void killQ(QData q, int i)
 {
+    fprintf(stderr, "%d) P killing %d - %d\n", i, q.write, getpid());
     sendKill(q.write);
     close(q.write);
     close(q.read);
@@ -177,5 +181,10 @@ bool forwardFile()
 
     int i = 0;
     for (i = 0; i < qDatasLen; i++)
+    {
+
+        logg("Sending to");
+        loggN(qDatas[i].write);
         sendFilename(qDatas[i].write, filename, filenameLen);
+    }
 }

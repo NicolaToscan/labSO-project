@@ -19,6 +19,21 @@ void doFile();
 
 int main(int argc, char *argv[])
 {
+	if (argc >= 3)
+	{
+		mySection = atoi(argv[1]);
+		totSections = atoi(argv[2]);
+	}
+	else
+	{
+		//TODO: oh no
+	}
+
+	if (mySection <= 0 || totSections <= 0)
+	{
+		//TODO: oh no
+	}
+
 	logg("Q started");
 
 	while (true)
@@ -59,6 +74,10 @@ int main(int argc, char *argv[])
 void readNumbers()
 {
 	readQnumbers(IN, &mySection, &totSections);
+	if (mySection <= 0 || totSections <= 0)
+	{
+		//TODO: oh no
+	}
 	clearLine(IN);
 }
 
@@ -68,6 +87,8 @@ void doFile()
 	readFilename(IN, myFile);
 	clearLine(IN);
 
+	fprintf(stderr, "%d) Ricevuto un file '%s'\n", mySection, myFile);
+	
 	Analysis a = analyseFile(myFile, mySection, totSections);
-	printAnalysis(OUT, a);
+	printAnalysis(STDERR_FILENO, a);
 }

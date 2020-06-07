@@ -15,7 +15,7 @@
 char **filenames;
 int filenamesLen = 0;
 
-int P = 3;
+int P = 2;
 int Q = 4;
 
 int WRITE_C = 0;
@@ -327,7 +327,8 @@ void *sendStuff()
                 sendFilename(WRITE_C, line, strlen(line));
             i = 0;
         }
-        i++;
+        else
+            i++;
     }
     logg("INVIATO REPORT");
 
