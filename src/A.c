@@ -25,7 +25,7 @@ int PID_C = 0;
 int READ_REPORTER = -1;
 bool isReporting = false;
 
-void startC();
+bool startC();
 void readCommand();
 void addFile(char *f);
 void removeFile(char *f);
@@ -35,14 +35,19 @@ bool checkFileExist(char *f);
 
 int main(int argc, char *argv[])
 {
-    startC();
+    if (!startC())
+    {
+        fprintf(stderr, "Couldn't start anoter process, please try again later");
+        exit(ERR_FORK);
+    }
+
     logg("A started");
     while (true)
         readCommand();
     return 0;
 }
 
-void startC()
+bool startC()
 {
     int fdDOWN[2];
     pipe(fdDOWN);
@@ -53,13 +58,7 @@ void startC()
     READ_C = fdUP[READ];
 
     pid_t pid = fork();
-    if (pid > 0) // Parent
-    {
-        PID_C = pid;
-        close(fdDOWN[READ]);
-        close(fdUP[WRITE]);
-    }
-    else if (pid == 0)
+    if (pid == 0)
     {
         close(fdDOWN[WRITE]);
         close(fdUP[READ]);
@@ -72,16 +71,26 @@ void startC()
         char Qstr[9];
         sprintf(Qstr, "%d", Q);
 
-        if (execlp(FILENAME_C, FILENAME_C, Pstr, Qstr, (char *)NULL) < 0)
-        {
-            //TODO: handle exec error
-            error("EXEC error");
-        }
+        execlp(FILENAME_C, FILENAME_C, Pstr, Qstr, (char *)NULL);
+        execErrorHandleAndExit(STDOUT_FILENO, fdDOWN[READ], fdUP[WRITE]);
+    }
+    else if (pid < 0)
+    {
+        forkErrorHandle(fdDOWN[READ], fdDOWN[WRITE], fdUP[READ], fdUP[WRITE]);
+        return false;
+    }
+
+    PID_C = pid;
+    close(fdDOWN[READ]);
+    close(fdUP[WRITE]);
+
+    if (readSimpleYNResponce(READ_C))
+    {
+        return true;
     }
     else
     {
-        //TODO: handle fork error
-        error("FORK error");
+        return false;
     }
 }
 
@@ -156,8 +165,10 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "S") == 0) //START REPORT
         {
-            startAReport();
-            printSuccess(OUT);
+            if (startAReport())
+                printSuccess(OUT);
+            else
+                printFail(OUT);
         }
         else if (strcmp(cmds[0], "K") == 0) //KILL
         {
@@ -278,6 +289,10 @@ bool startAReport()
     filenames = (char **)malloc(0);
 
     isReporting = true;
+    sendPandQ(WRITE_C, P, Q);
+    if (!readSimpleYNResponce(READ_C))
+        return false;
+
     pthread_t thredSender, thredReciver;
     pthread_create(&thredSender, NULL, sendStuff, NULL);
     pthread_create(&thredSender, NULL, readStuff, NULL);
@@ -287,9 +302,6 @@ bool startAReport()
 
 void *sendStuff()
 {
-    // SET P & Q
-    sendPandQ(WRITE_C, P, Q);
-
     int fd[2];
     pipe(fd);
     pid_t pid = fork();

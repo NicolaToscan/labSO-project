@@ -21,7 +21,7 @@ typedef struct QData_s
 
 bool startQ(QData *qData, int i);
 bool resizeQ(int q);
-void updateQnumbers();
+bool updateQnumbers();
 void killQ(QData q, int i);
 bool forwardFile();
 
@@ -36,7 +36,11 @@ int main(int argc, char *argv[])
     if (Q <= 0)
         Q = 4;
 
-    resizeQ(Q);
+    if (resizeQ(Q))
+        printSuccess(OUT);
+    else
+        printFail(OUT);
+
     logg("P started");
 
     while (true)
@@ -48,7 +52,10 @@ int main(int argc, char *argv[])
         {
             //UPDATE Qs
         case CMD_P_Qs:
-            updateQnumbers();
+            if (updateQnumbers())
+                printSuccess(OUT);
+            else
+                printFail(OUT);
             clearLine(IN);
             break;
 
@@ -93,13 +100,7 @@ bool startQ(QData *qData, int i)
     qData->read = fdUP[READ];
 
     pid_t pid = fork();
-    if (pid > 0) //Parent
-    {
-        qData->pid = pid;
-        close(fdDOWN[READ]);
-        close(fdUP[WRITE]);
-    }
-    else if (pid == 0) //Child
+    if (pid == 0) //Child
     {
         close(fdDOWN[WRITE]);
         close(fdUP[READ]);
@@ -112,25 +113,36 @@ bool startQ(QData *qData, int i)
         char Qstr[9];
         sprintf(Qstr, "%d", Q);
 
-        //close(fdDOWN[READ]);
-        //close(fdUP[WRITE]);
         execlp(FILENAME_Q, FILENAME_Q, Istr, Qstr, (char *)NULL);
-        //TODO: handle exec error
-        error("EXEC error");
+        execErrorHandleAndExit(STDOUT_FILENO, fdDOWN[READ], fdUP[WRITE]);
+    }
+    else if (pid < 0)
+    {
+        forkErrorHandle(fdDOWN[READ], fdDOWN[WRITE], fdUP[READ], fdUP[WRITE]);
+        return false;
+    }
+
+    qData->pid = pid;
+    close(fdDOWN[READ]);
+    close(fdUP[WRITE]);
+    if (readSimpleYNResponce(qData->read))
+    {
+        return true;
     }
     else
     {
-        //TODO: handle fork error
-        error("FORK error");
         return false;
     }
-    return true;
 }
 
 bool resizeQ(int q)
 {
+    fprintf(stderr, "RESIZING from p to %d q\n", q);
+
     if (qDatasLen == q)
         return true;
+
+    int startError = -1;
 
     QData *temp = (QData *)malloc(q * sizeof(QData));
     int i;
@@ -138,9 +150,24 @@ bool resizeQ(int q)
     {
         for (i = 0; i < qDatasLen; i++)
             temp[i] = qDatas[i];
-
         for (i = qDatasLen; i < q; i++)
-            startQ(&(temp[i]), i);
+        {
+            if (!startQ(&(temp[i]), i))
+            {
+                startError = i;
+                break;
+            }
+        }
+
+        // ERROR ON START
+        if (startError != -1)
+        {
+            error("ERROR RESIZING Qs, rolling back");
+            for (i = qDatasLen; i <= startError; i++)
+                killQ(qDatas[i], i);
+            free(temp);
+            return false;
+        }
     }
     else
     {
@@ -158,17 +185,25 @@ bool resizeQ(int q)
     return true;
 }
 
-void updateQnumbers()
+bool updateQnumbers()
 {
     int q = readPQs(IN);
-    Q = q;
 
     int toUpdate = (q < qDatasLen) ? q : qDatasLen;
     int i = 0;
     for (i = 0; i < toUpdate; i++)
         sendQnumbers(qDatas[i].write, i, q);
 
-    resizeQ(Q);
+    if (resizeQ(q))
+    {
+        Q = q;
+        return true;
+    }
+    else
+    {
+        error("P couldn't resize Qs");
+        return false;
+    }
 }
 
 void killQ(QData q, int i)
@@ -185,7 +220,6 @@ bool forwardFile()
 
     char filename[MAX_PATH_LENGHT];
     int filenameLen = readFilename(IN, filename);
-
 
     //SEND
     int i = 0;

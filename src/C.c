@@ -23,7 +23,7 @@ bool startP(PData *pData);
 bool resizeP(int toAdd);
 void killP(PData p);
 bool forwardFile();
-void updatePandQ();
+bool updatePandQ();
 void *forwardUpReports();
 
 int P = 3;
@@ -45,7 +45,10 @@ int main(int argc, char *argv[])
     if (Q <= 0)
         Q = 4;
 
-    resizeP(P);
+    if (resizeP(P))
+        printSuccess(OUT);
+    else
+        printFail(OUT);
 
     logg("C started");
 
@@ -58,7 +61,10 @@ int main(int argc, char *argv[])
         {
             //UPDATE Q and P
         case CMD_C_PandQ:
-            updatePandQ();
+            if (updatePandQ())
+                printSuccess(OUT);
+            else
+                printFail(OUT);
             clearLine(IN);
             break;
 
@@ -112,13 +118,7 @@ bool startP(PData *pData)
     pData->read = fdUP[READ];
 
     pid_t pid = fork();
-    if (pid > 0) //Parent
-    {
-        pData->pid = pid;
-        close(fdDOWN[READ]);
-        close(fdUP[WRITE]);
-    }
-    else if (pid == 0) //Child
+    if (pid == 0) //Child
     {
         close(fdDOWN[WRITE]);
         close(fdUP[READ]);
@@ -132,22 +132,34 @@ bool startP(PData *pData)
         //close(fdDOWN[READ]);
         //close(fdUP[WRITE]);
         execlp(FILENAME_P, FILENAME_P, Qstr, (char *)NULL);
-        //TODO: handle exec error
-        error("EXEC error");
+        execErrorHandleAndExit(STDOUT_FILENO, fdDOWN[READ], fdUP[WRITE]);
+    }
+    else if (pid < 0)
+    {
+        forkErrorHandle(fdDOWN[READ], fdDOWN[WRITE], fdUP[READ], fdUP[WRITE]);
+        return false;
+    }
+
+    pData->pid = pid;
+    close(fdDOWN[READ]);
+    close(fdUP[WRITE]);
+    if (readSimpleYNResponce(pData->read))
+    {
+        return true;
     }
     else
     {
-        //TODO: handle fork error
-        error("FORK error");
         return false;
     }
-    return true;
 }
 
 bool resizeP(int p)
 {
+
     if (pDatasLen == p)
         return true;
+
+    int startError = -1;
 
     PData *temp = (PData *)malloc(p * sizeof(PData));
     int i;
@@ -156,7 +168,23 @@ bool resizeP(int p)
         for (i = 0; i < pDatasLen; i++)
             temp[i] = pDatas[i];
         for (i = pDatasLen; i < p; i++)
-            startP(&(temp[i]));
+        {
+            if (!startP(&(temp[i])))
+            {
+                startError = i;
+                break;
+            }
+        }
+
+        // ERROR ON START
+        if (startError != -1)
+        {
+            error("ERROR RESIZING Qs, rolling back");
+            for (i = pDatasLen; i <= startError; i++)
+                killP(pDatas[i]);
+            free(temp);
+            return false;
+        }
     }
     else
     {
@@ -174,19 +202,43 @@ bool resizeP(int p)
     return true;
 }
 
-void updatePandQ()
+bool updatePandQ()
 {
     int p, q;
     readPandQ(IN, &p, &q);
-    Q = q;
-    P = p;
 
     int toUpdate = (p < pDatasLen) ? p : pDatasLen;
     int i = 0;
+    int errorI = -1;
     for (i = 0; i < toUpdate; i++)
-        sendPQs(pDatas[i].write, Q);
+    {
+        sendPQs(pDatas[i].write, q);
+        if (!readSimpleYNResponce(pDatas[i].read))
+        {
+            errorI = i;
+            break;
+        }
+    }
 
-    resizeP(P);
+    //ERROR, roll back
+    if (errorI != -1)
+    {
+        error("ROLLING BACK");
+        for (i = 0; i <= errorI; i++)
+            sendPQs(pDatas[i].write, Q);
+    }
+
+    if (resizeP(p))
+    {
+        Q = q;
+        P = p;
+        return true;
+    }
+    else
+    {
+        error("C couldn't resize Ps");
+        return false;
+    }
 }
 
 void killP(PData p)

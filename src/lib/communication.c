@@ -9,11 +9,13 @@
 
 void printSuccess(const int fd)
 {
-    write(fd, "Y\n", 2 * sizeof(char));
+    const char cmds[2] = { RESPONSE_OK, '\n' };
+    write(fd, cmds, 2 * sizeof(char));
 }
 void printFail(const int fd)
 {
-    write(fd, "N\n", 2 * sizeof(char));
+    const char cmds[2] = { RESPONSE_KO, '\n' };
+    write(fd, cmds, 2 * sizeof(char));
 }
 
 bool readSimpleYNResponce(const int fd)

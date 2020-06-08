@@ -12,6 +12,11 @@
 #define WRITE 1
 #define READ 0
 
+// ERRORS
+#define ERR_FORK 1
+#define ERR_EXEC 2
+#define ERR_INVALID_NR 3
+
 typedef unsigned long uint32;
 typedef unsigned long long uint64;
 
@@ -39,3 +44,6 @@ void sendCharCommand(const int file, const char cmd);
 void clearLine(const int file);
 char readchar(const int file);
 int readline(const int file, char *buffer, const int maxsize);
+
+void execErrorHandleAndExit(int out, int pipeToCloseA, int pipeToCloseB);
+void forkErrorHandle(int pA, int pB, int pC, int pD);

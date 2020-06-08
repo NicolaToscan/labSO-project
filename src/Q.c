@@ -26,15 +26,18 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		//TODO: oh no
+		printFail(OUT);
+		exit(ERR_INVALID_NR);
 	}
 
 	if (mySection <= 0 || totSections <= 0)
 	{
-		//TODO: oh no
+		printFail(OUT);
+		exit(ERR_INVALID_NR);
 	}
 
 	logg("Q started");
+	printSuccess(OUT);
 
 	while (true)
 	{

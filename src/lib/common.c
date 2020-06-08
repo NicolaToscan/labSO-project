@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "common.h"
+#include "communication.h"
 
 // ----- PRINT -----
 void error(char msg[])
@@ -73,4 +74,26 @@ int readline(const int file, char *buffer, const int maxsize)
 	}
 	buffer[maxsize - 1] = '\0';
 	return -1;
+}
+
+void execErrorHandleAndExit(int out, int pipeToCloseA, int pipeToCloseB)
+{
+	printFail(out);
+
+	if (pipeToCloseA > 0)
+		close(pipeToCloseA);
+	if (pipeToCloseB > 0)
+		close(pipeToCloseB);
+
+	error("EXEC error");
+	exit(ERR_EXEC);
+}
+
+void forkErrorHandle(int pA, int pB, int pC, int pD)
+{
+	close(pA);
+	close(pB);
+	close(pC);
+	close(pD);
+	error("FORK error");
 }

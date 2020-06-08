@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <termios.h>
 #include "lib/analisys.h"
 #include "lib/common.h"
 #include "lib/commands.h"
@@ -66,11 +67,9 @@ void startA()
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-        if (execlp(FILENAME_A, FILENAME_A, (char *)NULL) < 0)
-        {
-            //TODO: handle exec error
-            error("EXEC error");
-        }
+        execlp(FILENAME_A, FILENAME_A, (char *)NULL);
+        //TODO: handle exec error
+        error("EXEC error");
     }
     else
     {
@@ -316,7 +315,6 @@ void help(int argc, char *argv[])
     printf(" quit: \n");
     printf("  quit \n");
     printf("  kill all the process and quit \n");
-
 }
 
 void quit(int argc, char *argv[])
