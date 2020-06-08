@@ -2,35 +2,62 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "../src/lib/analisys.h"
+#include "../src/lib/common.h"
+#include "../src/lib/communication.h"
 
 int main()
 {
     int WRITE = 1;
     int READ = 0;
 
-    int pp[2];
-    pipe(pp);
+    int pipeToChild[2];
+    int pipeToParent[2];
+
+    pipe(pipeToChild);
+    pipe(pipeToParent);
+
+    FILE *write;
+    FILE *read;
 
     pid_t pid = fork();
-    if (pid > 0) // Parent
+    if (pid > 0)
     {
-        close(pp[READ]);
-        Analysis a = initAnalysis();
-        a.values[0] = 123;
-        a.values[8] = 456;
+        // Partent
 
-        printAnalysis(pp[WRITE], a);    
+        close(pipeToChild[READ]);
+        close(pipeToParent[WRITE]);
 
-        exit(0);
+        write = pipeToChild[WRITE];
+        read = pipeToParent[READ];
+
+        // Ok
+        
+        sendQnumbers(write, 1, 1);
+        sendFilename(write, "data.txt\0", 10);
+
+        Analysis a = readAnalysis(read);
+
+        sendKill(write);
     }
     else if (pid == 0)
     {
-        close(pp[WRITE]);
+        // Child
 
-        Analysis a = readAnalysis(pp[READ]);
-        printf("%lu e %lu\n", a.values[0], a.values[8]);
+        close(pipeToChild[WRITE]);
+        close(pipeToParent[READ]);
 
-        exit(0);
+        write = pipeToParent[WRITE];
+        read = pipeToChild[READ];
+
+        dup2(read, STDIN_FILENO);
+        dup2(write, STDOUT_FILENO);
+
+        // Exec
+
+        if(execlp(FILENAME_Q, FILENAME_Q, (char *)NULL) < 0)
+        {
+            printf("ERRORE EXECLP\n");
+        }
     }
     else
     {
