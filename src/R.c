@@ -15,6 +15,15 @@
 #define LEN_FILE MAX_PATH_LENGHT
 #define LEN_ANALYSIS ANAL_LENGTH
 
+typedef struct ReportData_s
+{
+    char *filename;
+    Analysis *a;
+} ReportData;
+
+ReportData *reportDatas = NULL;
+int reportDatasLen = 0;
+
 int tot = 0;
 char *fileNames_strings;
 int *analysis_elems;
@@ -22,15 +31,19 @@ int *deleted;
 
 int READ_A = 0;
 bool readingFromA = false;
+int fileDone = 0;
 
 void doReadAnalysis();
 void deleteFile();
 void printReport();
 void *readFromA();
 
+void addFile(char *file, int fileLen, Analysis an);
+void removeFile(char *file);
+
 int main(int argc, char *argv[])
 {
-    if (argc >= 22)
+    if (argc >= 2)
         READ_A = atoi(argv[1]);
     else
     {
@@ -38,7 +51,6 @@ int main(int argc, char *argv[])
         mkfifo(myfifo, 0666);
         READ_A = open(myfifo, O_RDONLY);
     }
-
     logg("R started");
 
     pthread_t thredReaderA;
@@ -50,12 +62,6 @@ int main(int argc, char *argv[])
 
         switch (cmd)
         {
-
-            //ANALYSIS
-        case CMD_ANALYSIS:
-            doReadAnalysis();
-            break;
-
             // REMOVE FILE
         case CMD_REMOVE_FILE:
             deleteFile();
@@ -85,64 +91,32 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void doReadAnalysis()
+void printReport()
 {
-    char fileName[MAX_PATH_LENGHT];
-    readFilename(IN, fileName);
-    Analysis a = readAnalysis(IN);
-
-    tot++;
-
-    // Store Nome file
-    fileNames_strings = realloc(fileNames_strings, tot * LEN_FILE * sizeof(char));
-    strcpy((LEN_FILE * (tot - 1)) + fileNames_strings, fileName);
-
-    // Store Analisi
-    analysis_elems = realloc(analysis_elems, tot * LEN_ANALYSIS * sizeof(uint32));
-    int temp = LEN_ANALYSIS * (tot - 1);
-    int i;
-    for (i = 0; i < LEN_ANALYSIS; i++)
+    if (readingFromA)
     {
-        analysis_elems[i + temp] = a.values[i];
-    }
-
-    // Store Deleted
-    deleted = realloc(deleted, tot * sizeof(int));
-    deleted[tot - 1] = 0;
-
-    clearLine(IN);
-}
-
-void deleteFile()
-{
-    char fileName[MAX_PATH_LENGHT];
-    readFilename(IN, fileName);
-
-    char *find = strstr(fileNames_strings, fileName);
-    int pos = (int)(find - fileNames_strings);
-
-    if (find == NULL)
-    {
-        error("Impossibile eliminare file non presente");
-
-        // Va gestito???
+        char outStr[512];
+        sprintf(outStr, "Report not finished, %d file analysed\n", fileDone);
+        write(OUT, outStr, strlen(outStr));
     }
     else
     {
-        int index = pos / LEN_FILE;
-        deleted[index] = 1;
+        int i;
+        for (i = 0; i < reportDatasLen; i++)
+        {
+            write(OUT, "File:\n", strlen("File:\n"));
+            write(OUT, reportDatas[i].filename, strlen(reportDatas[i].filename));
+            write(OUT, "\n", 1);
+
+            write(OUT, "Analysis: ", strlen("Analysis: "));
+            write(OUT, "\n", 1);
+        }
     }
-
-    clearLine(IN);
-}
-
-void printReport()
-{
+    write(OUT, "\n", 1);
 }
 
 void *readFromA()
 {
-
     char filename[MAX_PATH_LENGHT];
     char cmd;
     int filenameLen;
@@ -154,22 +128,21 @@ void *readFromA()
         switch (cmd)
         {
         case CMD_START:
-            readingFromA = true;
             clearLine(READ_A);
-            logg("READING STARTED FROM R");
+            readingFromA = true;
+            fileDone = 0;
             break;
 
         case CMD_FILE:
             filenameLen = readFilename(READ_A, filename);
             a = readAnalysis(READ_A);
-            logg("GOTTAFILE");
-            logg(filename);
+            addFile(filename, filenameLen, a);
+            fileDone++;
             break;
 
         case CMD_END:
             readingFromA = false;
             clearLine(READ_A);
-            logg("READING ENDED FROM R");
             break;
 
         default:
@@ -177,4 +150,68 @@ void *readFromA()
             break;
         }
     }
+}
+
+void addFile(char *file, int fileLen, Analysis an)
+{
+    int found = -1;
+    int i;
+    for (i = 0; i < reportDatasLen; i++)
+    {
+        if (strcmp(reportDatas[i].filename, file) == 0)
+        {
+            found = i;
+            break;
+        }
+    }
+
+    ReportData *toUpdate;
+    if (found == -1)
+    {
+        if (reportDatasLen == 0)
+            reportDatas = (ReportData *)malloc(sizeof(ReportData));
+        else
+            reportDatas = (ReportData *)realloc(reportDatas, (reportDatasLen + 1) * (sizeof(ReportData)));
+        toUpdate = reportDatas + reportDatasLen;
+        reportDatasLen++;
+    }
+    else
+    {
+        toUpdate = reportDatas + found;
+    }
+
+    toUpdate->a = (Analysis *)malloc(sizeof(Analysis));
+    memcpy(toUpdate->a, &an, sizeof(Analysis));
+
+    toUpdate->filename = (char *)malloc((fileLen + 1) * sizeof(char));
+    strcpy(toUpdate->filename, file);
+    toUpdate->filename[fileLen] = '\0';
+}
+
+void removeFile(char *file)
+{
+    int found = -1;
+    int i;
+    for (i = 0; i < reportDatasLen; i++)
+    {
+        if (strcmp(reportDatas[i].filename, file) == 0)
+        {
+            found = i;
+            break;
+        }
+    }
+
+    if (found < 0)
+        return;
+
+    free(reportDatas[found].a);
+    free(reportDatas[found].filename);
+
+    if (found != 0)
+        memcpy(reportDatas, reportDatas, found * sizeof(ReportData));
+    if (found != (reportDatasLen - 1))
+        memcpy(reportDatas + found, reportDatas + found + 1, (reportDatasLen - found - 1) * sizeof(char *));
+
+    reportDatas = (ReportData *)realloc(reportDatas, (reportDatasLen - 1) * (sizeof(ReportData)));
+    reportDatasLen--;
 }

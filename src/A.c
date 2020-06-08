@@ -37,7 +37,7 @@ bool checkFileExist(char *f);
 
 int main(int argc, char *argv[])
 {
-    if (argc >= 22)
+    if (argc >= 2)
         WRITE_R = atoi(argv[1]);
     else
     {
@@ -379,7 +379,6 @@ void *readStuff()
 {
     sendStart(WRITE_R);
 
-
     char cmd = 'F';
     char filename[MAX_PATH_LENGHT];
     while (true)
@@ -394,14 +393,9 @@ void *readStuff()
         {
             int filenameLen = readFilename(READ_C, filename);
             Analysis a = readAnalysis(READ_C);
-            error("A FILE");
-            error(filename);
-
             sendFilename(WRITE_R, filename, filenameLen);
             printAnalysis(WRITE_R, a);
         }
     }
-
-    error("SENDIGN END");
     sendFine(WRITE_R);
 }
