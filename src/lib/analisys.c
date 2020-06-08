@@ -10,7 +10,7 @@
 Analysis initAnalysis()
 {
     Analysis a;
-
+    a.valid = true;
     int i;
     for (i = 0; i < ANAL_LENGTH; i++)
     {
@@ -25,7 +25,15 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
     FILE *file;
     file = fopen(fileName, "r");
 
-    // ATTENZIONE POSSIBILE CASINO
+    Analysis a = initAnalysis();
+
+    if (file <= 0)
+    {
+        a.valid = false;
+        return a;
+    }
+
+    // TODO: ATTENZIONE POSSIBILE CASINO
     // FORSE VA RIDOTTA LA LENGTH PER TOGLIERE IL CHAR EOF
 
     fseek(file, 0, SEEK_END);
@@ -34,9 +42,7 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
     int howmany = part.second - part.first + 1;
 
     fseek(file, 0, part.first);
-    Analysis a = initAnalysis();
     int i = 0;
-
     while (i < howmany)
     {
         addCharAnalysis(&a, (char)fgetc(file));
@@ -49,6 +55,7 @@ Analysis analyseFile(char *fileName, int mySection, int totSections)
 
 void printAnalysis(const int file, Analysis a)
 {
+    write(file, &a.valid, sizeof(a.valid));
     write(file, a.values, sizeof(a.values));
     write(file, "\n", 1);
 }
@@ -56,6 +63,7 @@ void printAnalysis(const int file, Analysis a)
 Analysis readAnalysis(const int file)
 {
     Analysis a;
+    read(file, &a.valid, sizeof(a.valid));
     read(file, a.values, sizeof(a.values));
 
     char aCapo;
@@ -69,6 +77,9 @@ void sumAnalysis(Analysis *res, Analysis a)
     int i;
     for (i = 0; i < ANAL_LENGTH; i++)
         res->values[i] += a.values[i];
+
+    if (a.valid == false)
+        res->valid = false;
 }
 
 void addCharAnalysis(Analysis *a, char c)
@@ -100,7 +111,7 @@ void addCharAnalysis(Analysis *a, char c)
 
 void printAnalysisReadable(Analysis a)
 {
-    fprintf(stderr, "%d - %d - %d - %d - %d - %d - %d - %d - %d\n", (int)a.values[0], (int)a.values[1], (int)a.values[2], (int)a.values[3], (int)a.values[4], (int)a.values[5], (int)a.values[6], (int)a.values[7], (int)a.values[8]);
+    fprintf(stderr, "%d - %d - %d - %d - %d - %d - %d - %d - %d - %d\n", (int)a.valid, (int)a.values[0], (int)a.values[1], (int)a.values[2], (int)a.values[3], (int)a.values[4], (int)a.values[5], (int)a.values[6], (int)a.values[7], (int)a.values[8]);
 }
 
 int isText(char c) { return (c >= ' ' && c <= '~') ? 1 : 0; }

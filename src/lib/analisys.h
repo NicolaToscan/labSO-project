@@ -12,6 +12,7 @@
 
 typedef struct Analysis_s
 {
+	int valid;
 	unsigned long values[9];
 } Analysis;
 
