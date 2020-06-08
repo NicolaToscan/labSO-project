@@ -21,6 +21,8 @@ int *deleted;
 
 
 void readAnalysis();
+void deleteFile();
+void printReport();
 
 int main(int argc, char *argv[])
 {
@@ -46,7 +48,8 @@ int main(int argc, char *argv[])
 
 			//REPORT
 		case CMD_REQUEST_REPORT:
-
+            void printReport();
+            clearLine(IN);
 			break;
 
 			//KILL
@@ -105,6 +108,8 @@ void deleteFile()
     if(find == NULL)
     {
         error("Impossibile eliminare file non presente");
+
+        // Va gestito???
     }
     else
     {
@@ -113,4 +118,9 @@ void deleteFile()
     }  
 
     clearLine(IN);  
+}
+
+void printReport()
+{
+    
 }
