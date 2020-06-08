@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "analisys.h"
 #include "common.h"
 #include "filemanager.h"
 

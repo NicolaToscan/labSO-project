@@ -11,3 +11,6 @@
 #define CMD_Q_NUMBERS 'Q'
 #define CMD_P_Qs 'Q'
 #define CMD_C_PandQ 'P'
+
+#define CMD_REQUEST_REPORT 'T'
+#define CMD_REMOVE_FILE 'R'
