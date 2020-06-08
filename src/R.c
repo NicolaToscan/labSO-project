@@ -25,7 +25,7 @@ void readAnalysis();
 int main(int argc, char *argv[])
 {
 
-    logg("Q started");
+    logg("R started");
 
 	while (true)
 	{
@@ -38,9 +38,14 @@ int main(int argc, char *argv[])
 		case CMD_ANALYSIS:
 			readAnalysis();
 			break;
+        
+            // REMOVE FILE
+        case CMD_REMOVE_FILE:
+            deleteFile();
+            break;
 
 			//REPORT
-		case CMD_REPORT:
+		case CMD_REQUEST_REPORT:
 
 			break;
 
@@ -87,4 +92,25 @@ void readAnalysis()
     deleted[tot - 1] = 0;
 
     clearLine(IN);
+}
+
+void deleteFile()
+{
+    char fileName[MAX_PATH_LENGHT];
+    readFileName(IN, fileName);
+
+    char *find = strstr(fileNames, fileName);
+    int pos = (int) (find - fileNames);
+
+    if(find == NULL)
+    {
+        error("Impossibile eliminare file non presente");
+    }
+    else
+    {
+        int index = pos / LEN_FILE;
+        deleted[index] = 1;
+    }  
+
+    clearLine(IN);  
 }
