@@ -267,9 +267,7 @@ bool checkFileExist(char *f)
 void *sendStuff();
 void *readStuff();
 
-char **toFindArg;
-int toFindArgLen = 0;
-
+int FIND_READ_FILES = -1;
 bool startAReport()
 {
     if (isReporting)
@@ -277,8 +275,8 @@ bool startAReport()
     if (filenamesLen == 0)
         return true;
 
-    toFindArgLen = filenamesLen + 2;
-    toFindArg = (char **)malloc(toFindArgLen * sizeof(char *));
+    int toFindArgLen = filenamesLen + 2;
+    char **toFindArg = (char **)malloc(toFindArgLen * sizeof(char *));
     int i;
     for (i = 0; i < filenamesLen; i++)
         toFindArg[i + 1] = filenames[i];
@@ -289,19 +287,13 @@ bool startAReport()
     filenames = (char **)malloc(0);
 
     isReporting = true;
+
+    //CREATE PROCESSES
     sendPandQ(WRITE_C, P, Q);
     if (!readSimpleYNResponce(READ_C))
         return false;
 
-    pthread_t thredSender, thredReciver;
-    pthread_create(&thredSender, NULL, sendStuff, NULL);
-    pthread_create(&thredSender, NULL, readStuff, NULL);
-
-    return true;
-}
-
-void *sendStuff()
-{
+    //FIND FILES
     int fd[2];
     pipe(fd);
     pid_t pid = fork();
@@ -313,22 +305,47 @@ void *sendStuff()
         dup2(open("/dev/null", O_WRONLY), STDERR_FILENO);
         toFindArg[0] = "/usr/bin/find";
         execv("/usr/bin/find", toFindArg);
-        error("EXEC ERROR");
+
+        error("FIND NOT FOUND");
+        close(fd[WRITE]);
+        exit(ERR_EXEC);
+        //TODO: speriamo bene
     }
     else if (pid < 0)
     {
-        error("FORK ERROR");
+        error("FORK FIND ERROR");
+        close(fd[READ]);
+        close(fd[WRITE]);
+        return false;
     }
+
+    close(fd[WRITE]);
+    FIND_READ_FILES = fd[READ];
+
+    pthread_t thredSender, thredReciver;
+    pthread_create(&thredSender, NULL, sendStuff, NULL);
+    pthread_create(&thredSender, NULL, readStuff, NULL);
+
+    //CLEAR
+    for (i = 0; i < toFindArgLen; i++)
+        free(toFindArg[i]);
+    free(toFindArg);
+    toFindArgLen = 0;
+
+    return true;
+}
+
+void *sendStuff()
+{
 
     //START LA COSA CHE MAND INDIETRO
     sendStartC(WRITE_C);
 
-    close(fd[WRITE]);
     char line[MAX_PATH_LENGHT];
     int letti;
     char c;
     int i = 0;
-    while ((letti = read(fd[READ], &c, 1)) > 0)
+    while ((letti = read(FIND_READ_FILES, &c, 1)) > 0)
     {
         line[i] = c;
         if (c == '\n')
@@ -342,13 +359,7 @@ void *sendStuff()
             i++;
     }
     sendFine(WRITE_C);
-    close(fd[READ]);
-
-    //CLEAR
-    for (i = 0; i < toFindArgLen; i++)
-        free(toFindArg[i]);
-    free(toFindArg);
-    toFindArgLen = 0;
+    close(FIND_READ_FILES);
 
     isReporting = false;
 }
