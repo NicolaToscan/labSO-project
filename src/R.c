@@ -11,16 +11,16 @@
 #define IN STDIN_FILENO
 #define OUT STDOUT_FILENO
 
-#define LEN_FILE MAX_PATH_LENGTH
+#define LEN_FILE MAX_PATH_LENGHT
 #define LEN_ANALYSIS ANAL_LENGTH
 
 int tot = 0;
-char *fileNames;
-int *analysis;
+char *fileNames_strings;
+int *analysis_elems;
 int *deleted;
 
 
-void readAnalysis();
+void doReadAnalysis();
 void deleteFile();
 void printReport();
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
 			//ANALYSIS
 		case CMD_ANALYSIS:
-			readAnalysis();
+			doReadAnalysis();
 			break;
         
             // REMOVE FILE
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
 			//REPORT
 		case CMD_REQUEST_REPORT:
-            void printReport();
+            printReport();
             clearLine(IN);
 			break;
 
@@ -70,24 +70,24 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void readAnalysis()
+void doReadAnalysis()
 {
     char fileName[MAX_PATH_LENGHT];
-    readFileName(IN, fileName);
-    Analysis a = readAnalysis(fileName);
+    readFilename(IN, fileName);
+    Analysis a = readAnalysis(IN);
 
     tot++;
 
     // Store Nome file
-    fileNames = realloc(fileNames, tot * LEN_FILE * sizeof(char));
-    strcpy((LEN_FILE * (tot - 1)) + fileNames, fileName);
+    fileNames_strings = realloc(fileNames_strings, tot * LEN_FILE * sizeof(char));
+    strcpy((LEN_FILE * (tot - 1)) + fileNames_strings, fileName);
 
     // Store Analisi
-    analysis = realloc(analysis, tot * LEN_ANALYSIS * siseof(uint32));
+    analysis_elems = realloc(analysis_elems, tot * LEN_ANALYSIS * sizeof(uint32));
     int temp = LEN_ANALYSIS * (tot - 1);
-    for(int i = 0; i < LEN_ANALYSIS; i++)
+    int i; for(i = 0; i < LEN_ANALYSIS; i++)
     {
-        analysis[i + temp] = a[i];
+        analysis_elems[i + temp] = a.values[i];
     }
 
     // Store Deleted
@@ -100,10 +100,10 @@ void readAnalysis()
 void deleteFile()
 {
     char fileName[MAX_PATH_LENGHT];
-    readFileName(IN, fileName);
+    readFilename(IN, fileName);
 
-    char *find = strstr(fileNames, fileName);
-    int pos = (int) (find - fileNames);
+    char *find = strstr(fileNames_strings, fileName);
+    int pos = (int) (find - fileNames_strings);
 
     if(find == NULL)
     {
@@ -122,5 +122,5 @@ void deleteFile()
 
 void printReport()
 {
-    
+
 }
