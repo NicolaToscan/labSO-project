@@ -19,7 +19,7 @@ typedef struct PData_s
 
 } PData;
 
-bool startP(PData *pData);
+bool startP(PData *pData, int i);
 bool resizeP(int toAdd);
 void killP(PData p);
 bool forwardFile();
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-bool startP(PData *pData)
+bool startP(PData *pData, int i)
 {
     int fdDOWN[2];
     pipe(fdDOWN);
@@ -169,7 +169,7 @@ bool resizeP(int p)
             temp[i] = pDatas[i];
         for (i = pDatasLen; i < p; i++)
         {
-            if (!startP(&(temp[i])))
+            if (!startP(&(temp[i]), i))
             {
                 startError = i;
                 break;
@@ -179,7 +179,7 @@ bool resizeP(int p)
         // ERROR ON START
         if (startError != -1)
         {
-            error("ERROR RESIZING Qs, rolling back");
+            error("ERROR RESIZING Ps, rolling back");
             for (i = pDatasLen; i <= startError; i++)
                 killP(pDatas[i]);
             free(temp);

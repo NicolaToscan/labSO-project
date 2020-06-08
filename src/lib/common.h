@@ -6,6 +6,8 @@
 #define FILENAME_R "./bin/R.out"
 #define FILENAME_M "./bin/M.out"
 
+#define NAMED_PIPE "/tmp/myfifo"
+
 #define MAX_PATH_LENGHT 4096
 #define MAX_CMD_LENGHT 8192
 

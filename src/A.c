@@ -3,8 +3,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include "lib/analisys.h"
 #include <pthread.h>
+#include "lib/analisys.h"
 #include "lib/common.h"
 #include "lib/commands.h"
 #include "lib/communication.h"
@@ -22,6 +22,8 @@ int WRITE_C = 0;
 int READ_C = 0;
 int PID_C = 0;
 
+int WRITE_R = 0;
+
 int READ_REPORTER = -1;
 bool isReporting = false;
 
@@ -35,6 +37,15 @@ bool checkFileExist(char *f);
 
 int main(int argc, char *argv[])
 {
+    if (argc >= 22)
+        WRITE_R = atoi(argv[1]);
+    else
+    {
+        char *myfifo = NAMED_PIPE;
+        mkfifo(myfifo, 0666);
+        WRITE_R = open(myfifo, O_WRONLY);
+    }
+
     if (!startC())
     {
         fprintf(stderr, "Couldn't start anoter process, please try again later");
@@ -339,7 +350,7 @@ void *sendStuff()
 {
 
     //START LA COSA CHE MAND INDIETRO
-    sendStartC(WRITE_C);
+    sendStart(WRITE_C);
 
     char line[MAX_PATH_LENGHT];
     int letti;
@@ -366,7 +377,8 @@ void *sendStuff()
 
 void *readStuff()
 {
-    error("START LISTENING IN A");
+    sendStart(WRITE_R);
+
 
     char cmd = 'F';
     char filename[MAX_PATH_LENGHT];
@@ -382,10 +394,14 @@ void *readStuff()
         {
             int filenameLen = readFilename(READ_C, filename);
             Analysis a = readAnalysis(READ_C);
+            error("A FILE");
             error(filename);
-            printAnalysisReadable(a);
+
+            sendFilename(WRITE_R, filename, filenameLen);
+            printAnalysis(WRITE_R, a);
         }
     }
 
-    error("FINITO DA A");
+    error("SENDIGN END");
+    sendFine(WRITE_R);
 }

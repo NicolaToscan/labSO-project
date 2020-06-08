@@ -16,10 +16,14 @@ int WRITE_A = 0;
 int READ_A = 0;
 int PID_A = 0;
 
+int WRITE_R = 0;
+int READ_R = 0;
+int PID_R = 0;
+
 int P = 3;
 int Q = 4;
 
-void startA();
+bool startAandR();
 void readCommand();
 void file(int argc, char *argv[]);
 void setCmd(int argc, char *argv[]);
@@ -31,7 +35,7 @@ void doReport();
 int main(int argc, char *argv[])
 {
     logg("M started");
-    startA();
+    startAandR();
 
     while (true)
     {
@@ -42,40 +46,93 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void startA()
+bool startAandR()
 {
-    int fdDOWN[2];
-    pipe(fdDOWN);
-    WRITE_A = fdDOWN[WRITE];
+    int pipeAR[2];
+    pipe(pipeAR);
 
+    int fdDOWN[2];
     int fdUP[2];
+
+    // A
+    pipe(fdDOWN);
     pipe(fdUP);
+
+    WRITE_A = fdDOWN[WRITE];
     READ_A = fdUP[READ];
 
-    pid_t pid = fork();
-    if (pid > 0) // Parent
+    pid_t pidA = fork();
+
+    if (pidA == 0)
     {
-        PID_A = pid;
-        close(fdDOWN[READ]);
-        close(fdUP[WRITE]);
-    }
-    else if (pid == 0)
-    {
+        close(pipeAR[READ]);
+        char fdWriteToR[9];
+        sprintf(fdWriteToR, "%d", pipeAR[WRITE]);
+
         close(fdDOWN[WRITE]);
         close(fdUP[READ]);
 
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-        execlp(FILENAME_A, FILENAME_A, (char *)NULL);
-        //TODO: handle exec error
-        error("EXEC error");
+        execlp(FILENAME_A, FILENAME_A, fdWriteToR, (char *)NULL);
+        //TODO: speriamo bene
+
+        error("COULDN'T START A");
+        close(fdDOWN[WRITE]);
+        close(fdUP[READ]);
+        exit(ERR_EXEC);
     }
-    else
+    else if (pidA < 0)
     {
-        //TODO: handle fork error
-        error("FORK error");
+        forkErrorHandle(fdDOWN[READ], fdDOWN[WRITE], fdUP[READ], fdUP[WRITE]);
+        return false;
     }
+    close(pipeAR[WRITE]);
+
+    PID_A = pidA;
+    close(fdDOWN[READ]);
+    close(fdUP[WRITE]);
+
+    // R
+    pipe(fdDOWN);
+    pipe(fdUP);
+
+    WRITE_R = fdDOWN[WRITE];
+    READ_R = fdUP[READ];
+
+    pid_t pidR = fork();
+
+    if (pidR == 0)
+    {
+        char fdReadToR[9];
+        sprintf(fdReadToR, "%d", pipeAR[READ]);
+
+        close(fdDOWN[WRITE]);
+        close(fdUP[READ]);
+
+        dup2(fdDOWN[READ], STDIN_FILENO);
+        dup2(fdUP[WRITE], STDOUT_FILENO);
+
+        execlp(FILENAME_R, FILENAME_R, fdReadToR, (char *)NULL);
+        //TODO: speriamo bene
+
+        error("COULDN'T START R");
+        close(fdDOWN[WRITE]);
+        close(fdUP[READ]);
+        exit(ERR_EXEC);
+    }
+    else if (pidR < 0)
+    {
+        forkErrorHandle(fdDOWN[READ], fdDOWN[WRITE], fdUP[READ], fdUP[WRITE]);
+        return false;
+    }
+    close(pipeAR[READ]);
+
+    PID_A = pidA;
+    close(fdDOWN[READ]);
+    close(fdUP[WRITE]);
+
 }
 
 void readCommand()
@@ -122,6 +179,7 @@ void readCommand()
         else if (strcmp(cmds[0], "quit") == 0 || strcmp(cmds[0], "q") == 0)
         {
             sendKill(WRITE_A);
+            sendKill(WRITE_R);
             quit(num, cmds);
         }
         else

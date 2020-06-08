@@ -9,12 +9,12 @@
 
 void printSuccess(const int fd)
 {
-    const char cmds[2] = { RESPONSE_OK, '\n' };
+    const char cmds[2] = {RESPONSE_OK, '\n'};
     write(fd, cmds, 2 * sizeof(char));
 }
 void printFail(const int fd)
 {
-    const char cmds[2] = { RESPONSE_KO, '\n' };
+    const char cmds[2] = {RESPONSE_KO, '\n'};
     write(fd, cmds, 2 * sizeof(char));
 }
 
@@ -103,7 +103,7 @@ void readPandQ(const int fd, int *P, int *Q)
     read(fd, Q, sizeof(int));
 }
 
-void sendStartC(const int fd)
+void sendStart(const int fd)
 {
     char cmds[2] = {CMD_START, '\n'};
     write(fd, cmds, 2);
