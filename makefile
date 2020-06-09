@@ -94,8 +94,22 @@ bin/filemanager.o: src/lib/filemanager.c
 # Clean
 .PHONY: clean
 clean:
-	-rm bin/*.o
+	@-rm bin/*.o
+	@echo Deleted object files in bin/
+
+# Force
+.PHONY: force
+force:
+	@-rm bin/*.o
+	@-rm bin/*.out
+	@make
 
 # Help
 .PHONY: help
 help:
+	@echo Use make to create makefile
+	@echo Use make -s to create makefile hiding commands
+	@echo Use make clean to delete object files
+	@echo Use make force to re-build everything
+
+
