@@ -9,6 +9,7 @@ LabSO1-AA_2019_2020--202272_201523_202236
 A seguire una guida su come utilizzare l'applicazione e una descrizione base sulla sua struttura.
 
 ## Come testare il progetto
+- M può essere avviato da terminale aperto in una qualsiasi cartella, l'importante è che tutti gli eseguibili siano nella stessa directory
 - M dispone di un comando help per conoscere tutti i comandi disponibili
 - Sequenza
   - Avvia M (Main)
@@ -20,26 +21,31 @@ A seguire una guida su come utilizzare l'applicazione e una descrizione base sul
 
 ## Scelte implementative
 - Ampio utilizzo di pipe anonime per la comunicazione tra processi
-- Utilizzo di threads in alcuni casi per evitare deadlocks
+- Utilizzo di threads (in Counter, Analyzer, Report) per leggere/scrivere contemporaneamente su più pipe
+- Named pipe usate per gestire comunicazioni tra Analyzer e Report se questi vengono avviati singolarmente e non creati/gestiti automaticamente da Main
 
 ## Struttura dell'applicazione
 L'applicazione è composta da sei processi/sottosistemi:
 - **Main**
-	- Interfaccia utente
-	- Avvia sottoprocessi Report e Analyzer
+  - Interfaccia utente
+  - Avvia sottoprocessi Report e Analyzer
 - **Report**
-	- Riceve da Main istruzioni e aggiornamanenti sui files
-	- Riceve da Analyzer le analisi dei files
-	- Crea report dettagliati su richiesta
+  - Riceve da Main istruzioni e aggiornamanenti sui files
+  - Riceve da Analyzer le analisi dei files e le conserva
+  - Gestisce analisi di file eliminati/aggiunti
+  - Stampa report dettagliati su richiesta di Main
 - **Analyzer**
-	- Avvia sottoprocesso Counter a cui inoltra files e variabili n, m
-	- Riceve da Counter le analisi "grezze" e le invia a Report
+  - Salva file e cartelle che vengono aggiunti dall'utente
+  - Avvia sottoprocesso Counter a cui inoltra files e variabili P, Q
+  - Riceve da Counter le analisi "grezze" e le invia a Report
 - **Counter**
-	- Genera sottoprocessi P in numero variabile e gli assegna gruppi di files
+  - Riceve da Analyzer i file e variabili P, Q
+  - Genera sottoprocessi P in numero variabile e gli assegna gruppi di files
 - **P**
-	- Genera sottoprocessi Q in numero variabile e gli assegna parti di files
+  - Genera sottoprocessi Q in numero variabile e gli assegna parti di files
+  - Somma le analisi parziali dei Q e le ritorna a Counter
 - **Q**
-	- Calcola le analisi parziali dei files
+  - Calcola le analisi parziali dei files e le ritorna al suo padre P
 
 Sono presenti inoltre quattro librerie:
 - **Analisys**
