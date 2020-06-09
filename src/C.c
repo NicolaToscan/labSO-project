@@ -137,7 +137,9 @@ bool startP(PData *pData, int i)
 
         //close(fdDOWN[READ]);
         //close(fdUP[WRITE]);
-        execlp(FILENAME_P, FILENAME_P, Qstr, (char *)NULL);
+        char execFilenam[MAX_PATH_LENGHT];
+        getExecFilename(FILENAME_P, execFilenam);
+        execlp(execFilenam, execFilenam, Qstr, (char *)NULL);
         execErrorHandleAndExit(STDOUT_FILENO, fdDOWN[READ], fdUP[WRITE]);
     }
     else if (pid < 0)

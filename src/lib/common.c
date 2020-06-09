@@ -79,3 +79,9 @@ void forkErrorHandle(int pA, int pB, int pC, int pD)
 	close(pD);
 	error("FORK error");
 }
+
+void getExecFilename(char fileNameId, char *buff)
+{
+	int len = readlink("/proc/self/exe", buff, MAX_CMD_LENGHT);
+	buff[len - 5] = fileNameId;
+}

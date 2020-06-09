@@ -1,10 +1,10 @@
 
-#define FILENAME_Q "./bin/Q.out"
-#define FILENAME_P "./bin/P.out"
-#define FILENAME_C "./bin/C.out"
-#define FILENAME_A "./bin/A.out"
-#define FILENAME_R "./bin/R.out"
-#define FILENAME_M "./bin/M.out"
+#define FILENAME_Q 'Q'
+#define FILENAME_P 'P'
+#define FILENAME_C 'C'
+#define FILENAME_A 'A'
+#define FILENAME_R 'R'
+#define FILENAME_M 'M'
 
 #define NAMED_PIPE "/tmp/myfifo"
 
@@ -47,3 +47,5 @@ int readline(const int file, char *buffer, const int maxsize);
 
 void execErrorHandleAndExit(int out, int pipeToCloseA, int pipeToCloseB);
 void forkErrorHandle(int pA, int pB, int pC, int pD);
+
+void getExecFilename(char fileNameId, char *buff);

@@ -119,7 +119,9 @@ bool startQ(QData *qData, int i)
         char Qstr[9];
         sprintf(Qstr, "%d", Q);
 
-        execlp(FILENAME_Q, FILENAME_Q, Istr, Qstr, (char *)NULL);
+        char execFilenam[MAX_PATH_LENGHT];
+        getExecFilename(FILENAME_Q, execFilenam);
+        execlp(execFilenam, execFilenam, Istr, Qstr, (char *)NULL);
         execErrorHandleAndExit(STDOUT_FILENO, fdDOWN[READ], fdUP[WRITE]);
     }
     else if (pid < 0)

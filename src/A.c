@@ -100,7 +100,9 @@ bool startC()
         char Qstr[9];
         sprintf(Qstr, "%d", Q);
 
-        execlp(FILENAME_C, FILENAME_C, Pstr, Qstr, (char *)NULL);
+        char execFilenam[MAX_PATH_LENGHT];
+        getExecFilename(FILENAME_C, execFilenam);
+        execlp(execFilenam, execFilenam, Pstr, Qstr, (char *)NULL);
         execErrorHandleAndExit(STDOUT_FILENO, fdDOWN[READ], fdUP[WRITE]);
     }
     else if (pid < 0)

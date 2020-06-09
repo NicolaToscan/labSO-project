@@ -45,6 +45,9 @@ void sighandle_int(int sig)
 
 int main(int argc, char *argv[])
 {
+    char buf[MAX_CMD_LENGHT];
+    int aa = readlink("/proc/self/exe", buf, MAX_CMD_LENGHT);
+    printf("%s - %d\n", buf, aa);
     signal(SIGINT, sighandle_int);
     logg("M started");
 
@@ -107,7 +110,9 @@ void startAandR()
         char Qstr[9];
         sprintf(Qstr, "%d", Q);
 
-        execlp(FILENAME_A, FILENAME_A, fdWriteToR, Pstr, Qstr, (char *)NULL);
+        char execFilenam[MAX_PATH_LENGHT];
+        getExecFilename(FILENAME_A, execFilenam);
+        execlp(execFilenam, execFilenam, fdWriteToR, Pstr, Qstr, (char *)NULL);
 
         error("COULDN'T START A");
         close(fdDOWN[WRITE]);
@@ -148,7 +153,9 @@ void startAandR()
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-        execlp(FILENAME_R, FILENAME_R, fdReadToR, (char *)NULL);
+        char execFilenam[MAX_PATH_LENGHT];
+        getExecFilename(FILENAME_R, execFilenam);
+        execlp(execFilenam, execFilenam, fdReadToR, (char *)NULL);
 
         error("COULDN'T START R");
         close(fdDOWN[WRITE]);
