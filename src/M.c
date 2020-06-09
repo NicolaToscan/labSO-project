@@ -34,6 +34,7 @@ void doReport();
 void reportCmd(int argc, char *argv[]);
 bool handleBusyAndResponseReport();
 bool removeFileFromReport();
+void stampaReport();
 
 int main(int argc, char *argv[])
 {
@@ -344,11 +345,12 @@ void reportCmd(int argc, char *argv[])
         case 'c': //CLEAN
             sendCharCommand(WRITE_R, CMD_CLEAN);
             handleBusyAndResponseReport();
-            break;
+            return;
 
         case 'l': //SHOW
-                  //TODO: questo servirebbe farlo
-            break;
+            sendCharCommand(WRITE_R, CMD_REQUEST_REPORT);
+            stampaReport();
+            return;
 
         case 'r': //REMOVE
             optind--;
@@ -356,7 +358,7 @@ void reportCmd(int argc, char *argv[])
             for (; optind < argc && *argv[optind] != '-'; optind++)
                 if (!bloccato && !removeFileFromReport(argv[optind]))
                     bloccato = true;
-            break;
+            return;
 
         case '?':
             if (optopt == 'r')
@@ -368,6 +370,21 @@ void reportCmd(int argc, char *argv[])
             break;
         }
     }
+}
+
+void stampaReport()
+{
+    char cmd = readchar(READ_R);
+    if (cmd == CMD_BUSY)
+    {
+        char nFile[12];
+        readline(READ_R, nFile, 12);
+        printf("Report is still working, %s files done\n", nFile);
+        return;
+    }
+
+    cmd = readchar(READ_R); // READ \n
+    //TODO: copia incolla fino a \n e basta
 }
 
 bool handleBusyAndResponseReport()
