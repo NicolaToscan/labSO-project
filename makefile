@@ -1,7 +1,3 @@
-# Comando: make 	= crea cartella /bin con eseguibili
-# Comando: make -s	= uguale a make ma senza output
-# Comando: make clean	= elimina /bin
-
 CC = gcc
 STANDARD = -std=gnu90
 
@@ -12,12 +8,15 @@ LIB_DIR = src/lib
 BIN_DIR = bin
 
 PRJCTS = M A R C P Q
-PRJCTS_C = $(addprefix $(SRC_DIR)/, $(addsuffix .c, $(PRJCTS)))
-PRJCTS_O = $(addprefix $(BIN_DIR)/, $(addsuffix .o, $(PRJCTS)))
-
 LIBS = analisys commands common communication filemanager
+
+####
+
 LIBS_C = $(addprefix $(LIB_DIR)/, $(addsuffix .c, $(LIBS)))
 LIBS_O = $(addprefix $(BIN_DIR)/, $(addsuffix .o, $(LIBS)))
+
+PRJCTS_C = $(addprefix $(SRC_DIR)/, $(addsuffix .c, $(PRJCTS)))
+PRJCTS_O = $(addprefix $(BIN_DIR)/, $(addsuffix .o, $(PRJCTS)))
 
 OUTS = $(addprefix $(BIN_DIR)/, $(addsuffix .out, $(PRJCTS)))
 
