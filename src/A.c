@@ -15,7 +15,7 @@
 char **filenames;
 int filenamesLen = 0;
 
-int P = 2;
+int P = 3;
 int Q = 4;
 
 int WRITE_C = 0;
@@ -45,6 +45,16 @@ int main(int argc, char *argv[])
         mkfifo(myfifo, 0666);
         WRITE_R = open(myfifo, O_WRONLY);
     }
+
+    if (argc >= 3)
+        P = atoi(argv[2]);
+    if (argc >= 4)
+        Q = atoi(argv[3]);
+
+    if (P <= 0)
+        P = 3;
+    if (Q <= 0)
+        Q = 4;
 
     if (!startC())
     {
@@ -367,7 +377,10 @@ void *sendStuff()
         {
             line[i] = '\0';
             if (i > 0)
+            {
+                logg(line);
                 sendFilename(WRITE_C, line, strlen(line));
+            }
             i = 0;
         }
         else

@@ -77,10 +77,8 @@ int main(int argc, char *argv[])
             break;
 
         case CMD_REQUEST_REPORT_WHEN_READDY:
-            if (readingFromA)
-                printWhenReady = true;
-            else
-                printReport();
+            printWhenReady = true;
+            logg("OKO BRO");
             clearLine(IN);
             break;
 

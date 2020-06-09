@@ -26,7 +26,7 @@ int Q = 4;
 void startAandR();
 void readCommand();
 void file(int argc, char *argv[]);
-bool setCmd(int argc, char *argv[]);
+bool setCmd(int argc, char *argv[], bool sendCmd);
 void quit();
 void help(int argc, char *argv[]);
 bool forwardFile(char type, char *filename);
@@ -35,11 +35,20 @@ void reportCmd(int argc, char *argv[]);
 bool handleBusyAndResponseReport();
 bool removeFileFromReport();
 void stampaReport();
+void handleArgs(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-    startAandR();
     logg("M started");
+
+    if (argc > 1)
+    {
+        handleArgs(argc, argv);
+    }
+    else
+    {
+        startAandR();
+    }
 
     while (true)
     {
@@ -86,7 +95,12 @@ void startAandR()
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-        execlp(FILENAME_A, FILENAME_A, fdWriteToR, (char *)NULL);
+        char Pstr[9];
+        sprintf(Pstr, "%d", P);
+        char Qstr[9];
+        sprintf(Qstr, "%d", Q);
+
+        execlp(FILENAME_A, FILENAME_A, fdWriteToR, Pstr, Qstr, (char *)NULL);
         //TODO: speriamo bene
 
         error("COULDN'T START A");
@@ -171,7 +185,7 @@ void readCommand()
     {
         if (strcmp(cmds[0], "set") == 0)
         {
-            setCmd(num, cmds);
+            setCmd(num, cmds, true);
         }
         else if (strcmp(cmds[0], "file") == 0)
         {
@@ -203,7 +217,7 @@ void readCommand()
 
 // P and Q set
 
-bool setCmd(int argc, char *argv[])
+bool setCmd(int argc, char *argv[], bool sendCmd)
 {
 
     bool pSet = false, qSet = false;
@@ -238,7 +252,7 @@ bool setCmd(int argc, char *argv[])
     if (pSet)
     {
         if (p <= 0)
-            printf("set: argument for 'p' not valid\n");
+            printf("set: argument for 'p' not valid, usign previus value\n");
         else
             P = p;
     }
@@ -246,7 +260,7 @@ bool setCmd(int argc, char *argv[])
     if (qSet)
     {
         if (q <= 0)
-            printf("set: argument for 'q' not valid\n");
+            printf("set: argument for 'q' not valid, usign previus value\n");
         else
             Q = q;
     }
@@ -255,9 +269,15 @@ bool setCmd(int argc, char *argv[])
     sprintf(cmd, "P %d %d\n", P, Q);
     write(WRITE_A, cmd, strlen(cmd));
     if (readSimpleYNResponce(READ_A))
+    {
         printf("Values updated successfully\n");
+        return true;
+    }
     else
+    {
         printf("Couldn't update values\n");
+        return false;
+    }
 }
 
 // FILE handler
@@ -444,17 +464,91 @@ void doReport()
 void handleArgs(int argc, char *argv[])
 {
 
-    if (!setCmd(argc, argv))
+    bool err = false;
+
+    optind = 0;
+
+    int p, q;
+    char c;
+    while ((c = getopt(argc, argv, "p:q:f:")) != -1)
     {
+        switch (c)
+        {
+        case 'f':
+            break;
+        case 'p':
+            p = atoi(optarg);
+            break;
+        case 'q':
+            q = atoi(optarg);
+            break;
+        case '?':
+            if (optopt == 'f')
+            {
+                err = true;
+                printf("set: argument for 'f' not found\n");
+            }
+            else if (optopt == 'p')
+            {
+                err = true;
+                printf("set: argument for 'p' not found\n");
+            }
+            else if (optopt == 'q')
+            {
+                err = true;
+                printf("set: argument for 'q' not found\n");
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+    if (err)
         exit(ERR_INVALID_NR);
+
+    if (p > 0)
+        P = p;
+    if (Q > q)
+        Q = q;
+
+    startAandR();
+
+    optind = 0;
+    while ((c = getopt(argc, argv, "p:q:f:")) != -1)
+    {
+        switch (c)
+        {
+            //ADD FILE
+        case 'f':
+            optind--;
+            for (; optind < argc && *argv[optind] != '-'; optind++)
+                forwardFile('A', argv[optind]);
+            break;
+        case 'p':
+            break;
+        case 'q':
+            break;
+        case '?':
+            if (optopt == 'f')
+            {
+                err = true;
+                printf("set: argument for 'f' not found\n");
+            }
+            break;
+
+        default:
+            break;
+        }
     }
 
-    optind = 1;
-    file(argc, argv);
+    if (err)
+        quit();
+
     doReport();
+    error("SDFGHJK");
     sendCharCommand(WRITE_R, CMD_REQUEST_REPORT_WHEN_READDY);
     stampaReport();
-    quit();
 }
 
 // Other
