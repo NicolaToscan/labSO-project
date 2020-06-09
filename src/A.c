@@ -286,12 +286,14 @@ bool startAReport()
     if (filenamesLen == 0)
         return true;
 
-    int toFindArgLen = filenamesLen + 2;
+    int toFindArgLen = filenamesLen + 4;
     char **toFindArg = (char **)malloc(toFindArgLen * sizeof(char *));
     int i;
     for (i = 0; i < filenamesLen; i++)
         toFindArg[i + 1] = filenames[i];
-    toFindArg[filenamesLen + 1] = NULL;
+    toFindArg[filenamesLen + 1] = "-type";
+    toFindArg[filenamesLen + 2] = "f";
+    toFindArg[filenamesLen + 3] = NULL;
 
     free(filenames);
     filenamesLen = 0;
@@ -338,8 +340,10 @@ bool startAReport()
     pthread_create(&thredSender, NULL, readStuff, NULL);
 
     //CLEAR
-    for (i = 0; i < toFindArgLen; i++)
+    for (i = 1; i < toFindArgLen - 3; i++)
+    {
         free(toFindArg[i]);
+    }
     free(toFindArg);
     toFindArgLen = 0;
 
