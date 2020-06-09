@@ -11,10 +11,15 @@ SRC_DIR = src
 LIB_DIR = src/lib
 BIN_DIR = bin
 
-OUTS = $(BIN_DIR)/M.out $(BIN_DIR)/A.out $(BIN_DIR)/R.out $(BIN_DIR)/C.out $(BIN_DIR)/P.out $(BIN_DIR)/Q.out
+PRJCTS = M A R C P Q
+PRJCTS_C = $(addprefix $(SRC_DIR)/, $(addsuffix .c, $(PRJCTS)))
+PRJCTS_O = $(addprefix $(BIN_DIR)/, $(addsuffix .o, $(PRJCTS)))
 
-LIBS_O = $(BIN_DIR)/analisys.o $(BIN_DIR)/commands.o $(BIN_DIR)/common.o $(BIN_DIR)/communication.o $(BIN_DIR)/filemanager.o
-LIBS_C = $(LIB_DIR)/analisys.c $(LIB_DIR)/commands.c $(LIB_DIR)/common.c $(LIB_DIR)/communication.c $(LIB_DIR)/filemanager.c
+LIBS = analisys commands common communication filemanager
+LIBS_C = $(addprefix $(LIB_DIR)/, $(addsuffix .c, $(LIBS)))
+LIBS_O = $(addprefix $(BIN_DIR)/, $(addsuffix .o, $(LIBS)))
+
+OUTS = $(addprefix $(BIN_DIR)/, $(addsuffix .out, $(PRJCTS)))
 
 ####
 
