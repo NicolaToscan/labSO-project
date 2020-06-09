@@ -33,6 +33,7 @@ bool forwardFile(char type, char *filename);
 void doReport();
 void reportCmd(int argc, char *argv[]);
 bool handleBusyAndResponseReport();
+bool removeFileFromReport();
 
 int main(int argc, char *argv[])
 {
@@ -347,7 +348,13 @@ void reportCmd(int argc, char *argv[])
 
         case 'l': //SHOW
             break;
+
         case 'r': //REMOVE
+            optind--;
+            bool bloccato = false;
+            for (; optind < argc && *argv[optind] != '-'; optind++)
+                if (!bloccato && !removeFileFromReport(argv[optind]))
+                    bloccato = true;
             break;
 
         case '?':
@@ -370,7 +377,7 @@ bool handleBusyAndResponseReport()
         char nFile[12];
         readline(READ_R, nFile, 12);
         printf("Report is still working, %s files done\n", nFile);
-        return true;
+        return false;
     }
     else
     {
@@ -378,6 +385,27 @@ bool handleBusyAndResponseReport()
         return cmd == RESPONSE_OK ? true : false;
     }
 }
+
+bool removeFileFromReport(char *filename)
+{
+    char cc = CMD_REMOVE_FILE;
+    write(WRITE_R, &cc, 1);
+    write(WRITE_R, filename, strlen(filename));
+    write(WRITE_R, "\n", 1);
+
+    char cmd = readchar(READ_R);
+    if (cmd == CMD_BUSY)
+    {
+        char nFile[12];
+        readline(READ_R, nFile, 12);
+        printf("Report is still working, %s files done\n", nFile);
+        return false;
+    }
+    else
+    {
+        clearLine(READ_R);
+        return true;
+    }}
 
 bool forwardFile(char type, char *filename)
 {

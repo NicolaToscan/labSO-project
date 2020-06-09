@@ -30,7 +30,7 @@ int *analysis_elems;
 int *deleted;
 
 int READ_A = 0;
-bool readingFromA = true;
+bool readingFromA = false;
 int fileDone = 0;
 
 void doReadAnalysis();
@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
         {
             // REMOVE FILE
         case CMD_REMOVE_FILE:
+        logg("REMOVING");
             removeFile();
             break;
 
@@ -74,6 +75,7 @@ int main(int argc, char *argv[])
             clearLine(IN);
             break;
 
+            //CLEAN
         case CMD_CLEAN:
             clean();
             clearLine(IN);
@@ -223,7 +225,7 @@ void addFile(char *file, int fileLen, Analysis an)
 void removeFile()
 {
     char file[MAX_PATH_LENGHT];
-    int fileLen = readFilename(IN, file);
+    readline(IN, file, MAX_PATH_LENGHT);
 
     if (readingFromA)
     {
