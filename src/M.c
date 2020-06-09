@@ -374,6 +374,11 @@ void reportCmd(int argc, char *argv[])
                 for (; optind < argc && *argv[optind] != '-'; optind++)
                     if (!bloccato && !removeFileFromReport(argv[optind]))
                         bloccato = true;
+                if (!bloccato)
+                    printf("File removed\n");
+                else
+                    printf("Some file couldn't be removed\n");
+
                 break;
 
             case '?':

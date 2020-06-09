@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
         {
             // REMOVE FILE
         case CMD_REMOVE_FILE:
-            logg("REMOVING");
             removeFile();
             break;
 
@@ -78,7 +77,6 @@ int main(int argc, char *argv[])
 
         case CMD_REQUEST_REPORT_WHEN_READDY:
             printWhenReady = true;
-            logg("OKO BRO");
             clearLine(IN);
             break;
 
