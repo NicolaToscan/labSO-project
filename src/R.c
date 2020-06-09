@@ -42,6 +42,7 @@ void returnBusy();
 void addFile(char *file, int fileLen, Analysis an);
 void removeFile();
 void clean();
+void printReportMinimale();
 
 int main(int argc, char *argv[])
 {
@@ -75,6 +76,13 @@ int main(int argc, char *argv[])
             clearLine(IN);
             break;
 
+            //REPORT MINIMAL
+        case CMD_REQUEST_REPORT_MINIMAL:
+            printReportMinimale();
+            clearLine(IN);
+            break;
+
+            //REPORT SUBITO
         case CMD_REQUEST_REPORT_WHEN_READDY:
             printWhenReady = true;
             clearLine(IN);
@@ -139,11 +147,36 @@ void printReport()
         write(OUT, "\033[32;1m File: ", strlen("\033[32;1m File: "));
         write(OUT, reportDatas[i].filename, strlen(reportDatas[i].filename));
         write(OUT, "\033[0m\n", strlen("\033[0m\n"));
-
-        write(OUT, "Analysis:\n", strlen("Analysis:\n"));
-
         printAnalysisReport(OUT, *(reportDatas[i].a));
     }
+    write(OUT, "\n", 1);
+}
+
+void printReportMinimale()
+{
+    if (readingFromA)
+    {
+        returnBusy();
+        return;
+    }
+
+    sendCharCommand(OUT, CMD_REPORT);
+    int i;
+    Analysis tot = initAnalysis();
+
+    write(OUT, "\033[32;1m File:\033[0m\n", strlen("\033[32;1m File:\033[0m\n"));
+    for (i = 0; i < reportDatasLen; i++)
+    {
+        if (reportDatas[i].a->valid)
+        {
+            sumAnalysis(&tot, *(reportDatas[i].a));
+            write(OUT, reportDatas[i].filename, strlen(reportDatas[i].filename));
+            write(OUT, "\n", 1);
+        }
+    }
+
+    write(OUT, "\033[32;1m Analysis:\033[0m\n", strlen("\033[32;1m Analysis:\033[0m\n"));
+    printAnalysisReport(OUT, tot);
     write(OUT, "\n", 1);
 }
 

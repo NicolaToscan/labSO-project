@@ -345,7 +345,7 @@ void reportCmd(int argc, char *argv[])
 {
     char c;
     bool fatto = false;
-    while ((c = getopt(argc, argv, "sclr:")) != -1)
+    while ((c = getopt(argc, argv, "scmlr:")) != -1)
     {
         if (!fatto)
         {
@@ -365,6 +365,11 @@ void reportCmd(int argc, char *argv[])
 
             case 'l': //SHOW
                 sendCharCommand(WRITE_R, CMD_REQUEST_REPORT);
+                stampaReport();
+                break;
+
+            case 'm': //SHOW MINIMAL
+                sendCharCommand(WRITE_R, CMD_REQUEST_REPORT_MINIMAL);
                 stampaReport();
                 break;
 

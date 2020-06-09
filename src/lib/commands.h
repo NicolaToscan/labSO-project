@@ -13,6 +13,7 @@
 #define CMD_C_PandQ 'P'
 
 #define CMD_REQUEST_REPORT 'T'
+#define CMD_REQUEST_REPORT_MINIMAL 'M'
 #define CMD_REQUEST_REPORT_WHEN_READDY 'W'
 #define CMD_REMOVE_FILE 'R'
 #define CMD_CLEAN 'C'
