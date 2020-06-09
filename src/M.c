@@ -357,7 +357,10 @@ void reportCmd(int argc, char *argv[])
 
             case 'c': //CLEAN
                 sendCharCommand(WRITE_R, CMD_CLEAN);
-                handleBusyAndResponseReport();
+                if (handleBusyAndResponseReport())
+                    printf("Report cleaned\n");
+                else
+                    printf("Couldn't clean report\n");
                 break;
 
             case 'l': //SHOW
@@ -544,7 +547,6 @@ void handleArgs(int argc, char *argv[])
         quit();
 
     doReport();
-    error("SDFGHJK");
     sendCharCommand(WRITE_R, CMD_REQUEST_REPORT_WHEN_READDY);
     stampaReport();
 }

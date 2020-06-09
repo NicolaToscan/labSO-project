@@ -124,7 +124,6 @@ void clean()
     free(reportDatas);
     reportDatasLen = 0;
     printSuccess(OUT);
-    error("CLEANED");
 }
 
 void printReport()

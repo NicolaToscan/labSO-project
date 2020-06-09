@@ -376,7 +376,6 @@ void *sendStuff()
             line[i] = '\0';
             if (i > 0)
             {
-                logg(line);
                 sendFilename(WRITE_C, line, strlen(line));
             }
             i = 0;
