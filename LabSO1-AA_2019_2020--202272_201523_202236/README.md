@@ -10,6 +10,13 @@ A seguire una guida su come utilizzare l'applicazione e una descrizione base sul
 
 ## Come testare il progetto
 - M dispone di un comando help per conoscere tutti i comandi disponibili
+- Sequenza
+  - Avvia M (Main)
+  - Cambia numero di P e Q
+  - Aggiungi/Rimuovi file
+  - Avvia R (Report)
+  - Richiedi report
+- Inoltre, tutte le operazioni (tranne l'avvio di M) sono ripetibili più volte in qualunque ordine (esempio: dopo aver chiesto un report, aggiungo altri file, cambio P e/o Q per poi chiedere un altro report)
 
 ## Scelte implementative
 - Ampio utilizzo di pipe anonime per la comunicazione tra processi
