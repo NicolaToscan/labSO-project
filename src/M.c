@@ -87,7 +87,6 @@ void startAandR()
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
         execlp(FILENAME_A, FILENAME_A, fdWriteToR, (char *)NULL);
-        //TODO: speriamo bene
 
         error("COULDN'T START A");
         close(fdDOWN[WRITE]);
@@ -129,7 +128,6 @@ void startAandR()
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
         execlp(FILENAME_R, FILENAME_R, fdReadToR, (char *)NULL);
-        //TODO: speriamo bene
 
         error("COULDN'T START R");
         close(fdDOWN[WRITE]);

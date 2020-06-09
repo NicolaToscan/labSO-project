@@ -122,7 +122,6 @@ void readCommand()
         cmds = realloc(cmds, sizeof(char *) * ++num);
         if (cmds == NULL)
         {
-            //TODO: MERDA
             exit(0);
         }
         cmds[num - 1] = p;
@@ -322,7 +321,6 @@ bool startAReport()
         error("FIND NOT FOUND");
         close(fd[WRITE]);
         exit(ERR_EXEC);
-        //TODO: speriamo bene
     }
     else if (pid < 0)
     {
