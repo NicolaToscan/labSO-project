@@ -141,9 +141,9 @@ void printReport()
     int i;
     for (i = 0; i < reportDatasLen; i++)
     {
-        write(OUT, "File:\n", strlen("File:\n"));
+        write(OUT, "\033[32;1m File: ", strlen("\033[32;1m File: "));
         write(OUT, reportDatas[i].filename, strlen(reportDatas[i].filename));
-        write(OUT, "\n", 1);
+        write(OUT, "\033[0m\n", strlen("\033[0m\n"));
 
         write(OUT, "Analysis:\n", strlen("Analysis:\n"));
 

@@ -136,34 +136,37 @@ void printAnalysisReport(const int fd, Analysis a)
     if (a.valid)
     {
 
-        sprintf(line, "the total number of character are  %d \n", upperLetter + lowerLetter + number + mathSymbols + punctuation + brackets + space + text + other);
+        sprintf(line, "the total number of character are\t%d \n", upperLetter + lowerLetter + number + mathSymbols + punctuation + brackets + space + text + other);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of uppercase letters is  %d \n", upperLetter);
+        sprintf(line, "the number of uppercase letters is\t%d \n", upperLetter);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of lowercase letters is %d \n", lowerLetter);
+        sprintf(line, "the number of lowercase letters is\t%d \n", lowerLetter);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of numbers is %d \n", number);
+        sprintf(line, "the number of numbers is\t\t%d \n", number);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of math character is %d \n", mathSymbols);
+        sprintf(line, "the number of math character is\t\t%d \n", mathSymbols);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of punctuation symbols is %d \n", punctuation);
+        sprintf(line, "the number of punctuation symbols is\t%d \n", punctuation);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of brackets is %d \n", brackets);
+        sprintf(line, "the number of brackets is\t\t%d \n", brackets);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of spaces is %d \n", space);
+        sprintf(line, "the number of spaces is\t\t\t%d \n", space);
         write(fd, line, strlen(line));
 
-        sprintf(line, "other characters( & $ @ _ ^ | #) : %d \n", text);
+        sprintf(line, "other characters( & $ @ _ ^ | #) :\t%d \n", text);
         write(fd, line, strlen(line));
 
-        sprintf(line, "other like \\n etc %d \n", other);
+        sprintf(line, "other like \\n etc\t\t\t%d \n", other);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "-----------------------------------------------\n");
         write(fd, line, strlen(line));
     }
     else
