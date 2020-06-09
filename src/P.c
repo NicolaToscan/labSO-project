@@ -24,6 +24,7 @@ bool resizeQ(int q);
 bool updateQnumbers();
 void killQ(QData q, int i);
 bool forwardFile();
+void quit();
 
 int Q = DEFAULT_Q;
 QData *qDatas = NULL;
@@ -45,8 +46,10 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        char cmd = readchar(IN);
-        //fprintf(stderr, " ---- P COMANDO: %c-%d\n", cmd, getpid());
+        char cmd;
+        int r = read(IN, &cmd, 1);
+        if (r == 0)
+            quit();
 
         switch (cmd)
         {
@@ -72,21 +75,25 @@ int main(int argc, char *argv[])
             //KILL
         case CMD_KILL:
             clearLine(IN);
-            resizeQ(0);
-            logg("P KILLED");
-            exit(0);
+            quit();
             break;
 
             //CLEAR LINE
         default:
             clearLine(IN);
             logg("CMD NOT FOUND DA P");
-            exit(0);
             break;
         }
     }
 
     return 0;
+}
+
+void quit()
+{
+    resizeQ(0);
+    logg("P KILLED");
+    exit(0);
 }
 
 bool startQ(QData *qData, int i)

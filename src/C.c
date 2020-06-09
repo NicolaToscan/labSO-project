@@ -25,6 +25,7 @@ void killP(PData p);
 bool forwardFile();
 bool updatePandQ();
 void *forwardUpReports();
+void quit();
 
 int P = DEFAULT_P;
 int Q = DEFAULT_Q;
@@ -54,7 +55,10 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        char cmd = readchar(IN);
+        char cmd;
+        int r = read(IN, &cmd, 1);
+        if (r == 0)
+            quit();
         //fprintf(stderr, " -- C COMANDO: %c-%d\n", cmd, getpid());
 
         switch (cmd)
@@ -91,9 +95,7 @@ int main(int argc, char *argv[])
             //KILL
         case CMD_KILL:
             clearLine(IN);
-            resizeP(0);
-            logg("C KILLED");
-            exit(0);
+            quit();
             break;
 
             //CLEAR LINE
@@ -105,6 +107,13 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+void quit()
+{
+    resizeP(0);
+    logg("C KILLED");
+    exit(0);
 }
 
 bool startP(PData *pData, int i)

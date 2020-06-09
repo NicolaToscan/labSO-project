@@ -16,6 +16,7 @@ int totSections;
 
 void readNumbers();
 void doFile();
+void quit();
 
 int main(int argc, char *argv[])
 {
@@ -41,7 +42,10 @@ int main(int argc, char *argv[])
 
 	while (true)
 	{
-		char cmd = readchar(IN);
+		char cmd;
+		int r = read(IN, &cmd, 1);
+		if (r == 0)
+			quit();
 
 		switch (cmd)
 		{
@@ -59,8 +63,7 @@ int main(int argc, char *argv[])
 			//KILL
 		case CMD_KILL:
 			clearLine(IN);
-			logg("Q KILLED");
-			exit(0);
+			quit();
 			break;
 
 			//CLEAR LINE
@@ -72,6 +75,12 @@ int main(int argc, char *argv[])
 	}
 
 	return 0;
+}
+
+void quit()
+{
+	logg("Q KILLED");
+	exit(0);
 }
 
 void readNumbers()

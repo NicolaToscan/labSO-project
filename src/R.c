@@ -44,6 +44,7 @@ void addFile(char *file, int fileLen, Analysis an);
 void removeFile();
 void clean();
 void printReportMinimale();
+void quit();
 
 void sighandle_int(int sig)
 {
@@ -68,7 +69,10 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        char cmd = readchar(IN);
+        char cmd;
+        int r = read(IN, &cmd, 1);
+        if (r == 0)
+            quit();
 
         switch (cmd)
         {
@@ -104,8 +108,6 @@ int main(int argc, char *argv[])
             //KILL
         case CMD_KILL:
             clearLine(IN);
-            logg("R KILLED");
-            exit(0);
             break;
 
             //CLEAR LINE
@@ -117,6 +119,12 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+void quit()
+{
+    logg("R KILLED");
+    exit(0);
 }
 
 void clean()
