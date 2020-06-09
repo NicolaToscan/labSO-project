@@ -95,17 +95,12 @@ void startAandR()
         dup2(fdDOWN[READ], STDIN_FILENO);
         dup2(fdUP[WRITE], STDOUT_FILENO);
 
-<<<<<<< HEAD
         char Pstr[9];
         sprintf(Pstr, "%d", P);
         char Qstr[9];
         sprintf(Qstr, "%d", Q);
 
         execlp(FILENAME_A, FILENAME_A, fdWriteToR, Pstr, Qstr, (char *)NULL);
-        //TODO: speriamo bene
-=======
-        execlp(FILENAME_A, FILENAME_A, fdWriteToR, (char *)NULL);
->>>>>>> fafe7ef1a085fdc353deda3508338b281bfbf3c5
 
         error("COULDN'T START A");
         close(fdDOWN[WRITE]);
