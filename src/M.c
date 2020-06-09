@@ -26,8 +26,8 @@ int Q = 4;
 void startAandR();
 void readCommand();
 void file(int argc, char *argv[]);
-void setCmd(int argc, char *argv[]);
-void quit(int argc, char *argv[]);
+bool setCmd(int argc, char *argv[]);
+void quit();
 void help(int argc, char *argv[]);
 bool forwardFile(char type, char *filename);
 void doReport();
@@ -165,7 +165,8 @@ void readCommand()
         cmds[num - 1] = p;
         p = strtok(NULL, " ");
     }
-    optind = 1;
+
+    optind = 0;
     if (num > 0)
     {
         if (strcmp(cmds[0], "set") == 0)
@@ -188,7 +189,7 @@ void readCommand()
         {
             sendKill(WRITE_A);
             sendKill(WRITE_R);
-            quit(num, cmds);
+            quit();
         }
         else
         {
@@ -200,10 +201,9 @@ void readCommand()
     free(cmds);
 }
 
-
 // P and Q set
 
-void setCmd(int argc, char *argv[])
+bool setCmd(int argc, char *argv[])
 {
 
     bool pSet = false, qSet = false;
@@ -326,40 +326,45 @@ bool forwardFile(char type, char *filename)
 void reportCmd(int argc, char *argv[])
 {
     char c;
+    bool fatto = false;
     while ((c = getopt(argc, argv, "sclr:")) != -1)
     {
-        switch (c)
+        if (!fatto)
         {
-        case 's': //START
-            doReport();
-            return;
+            switch (c)
+            {
+            case 's': //START
+                doReport();
+                break;
 
-        case 'c': //CLEAN
-            sendCharCommand(WRITE_R, CMD_CLEAN);
-            handleBusyAndResponseReport();
-            return;
+            case 'c': //CLEAN
+                sendCharCommand(WRITE_R, CMD_CLEAN);
+                handleBusyAndResponseReport();
+                break;
 
-        case 'l': //SHOW
-            sendCharCommand(WRITE_R, CMD_REQUEST_REPORT);
-            stampaReport();
-            return;
+            case 'l': //SHOW
+                sendCharCommand(WRITE_R, CMD_REQUEST_REPORT);
+                stampaReport();
+                break;
 
-        case 'r': //REMOVE
-            optind--;
-            bool bloccato = false;
-            for (; optind < argc && *argv[optind] != '-'; optind++)
-                if (!bloccato && !removeFileFromReport(argv[optind]))
-                    bloccato = true;
-            return;
+            case 'r': //REMOVE
+                optind--;
+                bool bloccato = false;
+                for (; optind < argc && *argv[optind] != '-'; optind++)
+                    if (!bloccato && !removeFileFromReport(argv[optind]))
+                        bloccato = true;
+                break;
 
-        case '?':
-            if (optopt == 'r')
-                printf("set: argument for 'r' not found\n");
+            case '?':
+                if (optopt == 'r')
+                    printf("set: argument for 'r' not found\n");
 
-            break;
+                break;
 
-        default:
-            break;
+            default:
+                break;
+            }
+            fatto = true;
         }
     }
 }
@@ -434,6 +439,24 @@ void doReport()
         printf("Couldn't start report\n");
 }
 
+// ARGS
+
+void handleArgs(int argc, char *argv[])
+{
+
+    if (!setCmd(argc, argv))
+    {
+        exit(ERR_INVALID_NR);
+    }
+
+    optind = 1;
+    file(argc, argv);
+    doReport();
+    sendCharCommand(WRITE_R, CMD_REQUEST_REPORT_WHEN_READDY);
+    stampaReport();
+    quit();
+}
+
 // Other
 
 void help(int argc, char *argv[])
@@ -461,7 +484,7 @@ void help(int argc, char *argv[])
     printf("  kill all the process and quit \n");
 }
 
-void quit(int argc, char *argv[])
+void quit()
 {
     logg("M killed");
     exit(0);

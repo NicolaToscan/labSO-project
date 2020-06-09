@@ -31,6 +31,7 @@ int *deleted;
 
 int READ_A = 0;
 bool readingFromA = false;
+bool printWhenReady = true;
 int fileDone = 0;
 
 void doReadAnalysis();
@@ -72,6 +73,14 @@ int main(int argc, char *argv[])
             //REPORT
         case CMD_REQUEST_REPORT:
             printReport();
+            clearLine(IN);
+            break;
+
+        case CMD_REQUEST_REPORT_WHEN_READDY:
+            if (readingFromA)
+                printWhenReady = true;
+            else
+                printReport();
             clearLine(IN);
             break;
 
@@ -180,6 +189,11 @@ void *readFromA()
         case CMD_END:
             readingFromA = false;
             clearLine(READ_A);
+            if (printWhenReady)
+            {
+                printReport();
+                printWhenReady = false;
+            }
             break;
 
         default:
