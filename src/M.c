@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <termios.h>
+#include <signal.h>
 #include "lib/analisys.h"
 #include "lib/common.h"
 #include "lib/commands.h"
@@ -37,8 +37,14 @@ bool removeFileFromReport();
 void stampaReport();
 void handleArgs(int argc, char *argv[]);
 
+void sighandle_int(int sig)
+{
+    quit();
+}
+
 int main(int argc, char *argv[])
 {
+    signal(SIGINT, sighandle_int);
     logg("M started");
 
     if (argc > 1)
@@ -345,7 +351,7 @@ void reportCmd(int argc, char *argv[])
 {
     char c;
     bool fatto = false;
-    while ((c = getopt(argc, argv, "scmlr:")) != -1)
+    while ((c = getopt(argc, argv, "scmlwr:")) != -1)
     {
         if (!fatto)
         {
@@ -370,6 +376,12 @@ void reportCmd(int argc, char *argv[])
 
             case 'm': //SHOW MINIMAL
                 sendCharCommand(WRITE_R, CMD_REQUEST_REPORT_MINIMAL);
+                stampaReport();
+                break;
+
+            case 'w': //SHOW SUBITO
+                doReport();
+                sendCharCommand(WRITE_R, CMD_REQUEST_REPORT_WHEN_READDY);
                 stampaReport();
                 break;
 
@@ -566,26 +578,55 @@ void handleArgs(int argc, char *argv[])
 void help(int argc, char *argv[])
 {
     printf("\n");
-    printf(" set: \n");
-    printf("  set [-p numberofP] [-q numberofQ] \n");
-    printf("  edit p and q \n");
-    printf("  options:\n");
-    printf("    -p numberofP edit the number of P \n");
-    printf("    -q numberofQ edit the number of Q \n\n");
-    printf(" file: \n");
-    printf("  file [-a filepath] [-r filepath] [-u filepath] [-l] \n");
-    printf("  manage files\n");
-    printf("  options:\n");
-    printf("   -a filepath add a file \n");
-    printf("   -r filepath remove a file \n");
-    printf("   -u filepath recheck file\n");
-    printf("   -l print the added files \n\n");
-    printf(" report: \n");
-    printf("  report\n");
-    printf("  starts the report \n\n");
-    printf(" quit: \n");
-    printf("  quit \n");
-    printf("  kill all the process and quit \n");
+    printf("set -p <number> -q <number> \n");
+    printf("   set the number of Ps and Qs \n");
+    printf("   options:\n");
+    printf("     -p edit the number of P \n");
+    printf("     -q edit the number of Q \n");
+    printf("\n");
+
+    printf("file -a <filename1> <filename2> ... -r <filename1> <filename2> ... \n");
+    printf("   add and remove files and directory for new report \n");
+    printf("   options:\n");
+    printf("     -a list of filenames to add \n");
+    printf("     -r list of filenames to remove \n");
+    printf("\n");
+
+    printf("file -l\n");
+    printf("   list all file and directory that are currently wait to be reported \n");
+    printf("\n");
+
+    printf("report -s\n");
+    printf("   start a new report in background \n");
+    printf("\n");
+
+    printf("report -l\n");
+    printf("   show results of a report \n");
+    printf("\n");
+
+    printf("report -w\n");
+    printf("   start a new report and show its results when it's finished \n");
+    printf("\n");
+
+    printf("report -m\n");
+    printf("   show a summary of the result of a report \n");
+    printf("\n");
+
+    printf("report -r <filename1> <filename2> ... \n");
+    printf("   remove files from current report \n");
+    printf("   options:\n");
+    printf("     -r list of files to remove \n");
+    printf("\n");
+
+    printf("report -c\n");
+    printf("   clean current report \n");
+    printf("\n");
+
+    printf("quit | exit | q\n");
+    printf("   close all processes and exit \n");
+    printf("\n");
+
+    printf("\n");
 }
 
 void quit()

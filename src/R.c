@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <signal.h>
 #include "lib/commands.h"
 #include "lib/common.h"
 #include "lib/analisys.h"
@@ -44,8 +45,14 @@ void removeFile();
 void clean();
 void printReportMinimale();
 
+void sighandle_int(int sig)
+{
+    exit(0);
+}
+
 int main(int argc, char *argv[])
 {
+    signal(SIGINT, sighandle_int);
     if (argc >= 2)
         READ_A = atoi(argv[1]);
     else

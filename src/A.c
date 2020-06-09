@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <signal.h>
 #include "lib/analisys.h"
 #include "lib/common.h"
 #include "lib/commands.h"
@@ -34,9 +35,16 @@ void removeFile(char *f);
 void printFiles();
 bool startAReport();
 bool checkFileExist(char *f);
+void quit();
+
+void sighandle_int(int sig)
+{
+    quit();
+}
 
 int main(int argc, char *argv[])
 {
+    signal(SIGINT, sighandle_int);
     if (argc >= 2)
         WRITE_R = atoi(argv[1]);
     else
@@ -192,9 +200,7 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "K") == 0) //KILL
         {
-            sendKill(WRITE_C);
-            logg("A killed");
-            exit(0);
+            quit();
         }
         else
         {
@@ -412,4 +418,11 @@ void *readStuff()
         }
     }
     sendFine(WRITE_R);
+}
+
+void quit()
+{
+    sendKill(WRITE_C);
+    logg("A killed");
+    exit(0);
 }
