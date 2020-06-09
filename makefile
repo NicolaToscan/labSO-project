@@ -101,7 +101,6 @@ clean:
 .PHONY: force
 force:
 	@-rm bin/*.o
-	@-rm bin/*.out
 	@make
 
 # Help
