@@ -31,7 +31,7 @@ int *deleted;
 
 int READ_A = 0;
 bool readingFromA = false;
-bool printWhenReady = true;
+bool printWhenReady = false;
 int fileDone = 0;
 
 void doReadAnalysis();
@@ -139,6 +139,7 @@ void printReport()
 
     sendCharCommand(OUT, CMD_REPORT);
     int i;
+    loggN(reportDatasLen);
     for (i = 0; i < reportDatasLen; i++)
     {
         write(OUT, "File:\n", strlen("File:\n"));
@@ -148,8 +149,6 @@ void printReport()
         write(OUT, "Analysis:\n", strlen("Analysis:\n"));
 
         printAnalysisReport(OUT, *(reportDatas[i].a));
-
-        write(OUT, "\n", 1);
     }
     write(OUT, "\n", 1);
 }
@@ -205,6 +204,7 @@ void *readFromA()
 
 void addFile(char *file, int fileLen, Analysis an)
 {
+    error(file);
     int found = -1;
     int i;
     for (i = 0; i < reportDatasLen; i++)
