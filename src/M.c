@@ -31,6 +31,7 @@ void quit(int argc, char *argv[]);
 void help(int argc, char *argv[]);
 bool forwardFile(char type, char *filename);
 void doReport();
+void reportCmd(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
@@ -132,7 +133,6 @@ bool startAandR()
     PID_A = pidA;
     close(fdDOWN[READ]);
     close(fdUP[WRITE]);
-
 }
 
 void readCommand()
@@ -170,7 +170,7 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "report") == 0)
         {
-            doReport();
+            reportCmd(num, cmds);
         }
         else if (strcmp(cmds[0], "help") == 0)
         {
@@ -319,6 +319,39 @@ void file(int argc, char *argv[])
                 printf("set: argument for 'n' not found\n");
             else if (optopt == 'w')
                 printf("set: argument for 'u' not found\n");
+
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+
+void reportCmd(int argc, char *argv[])
+{
+    char c;
+    while ((c = getopt(argc, argv, "sclr:")) != -1)
+    {
+        switch (c)
+        {
+        case 's': //START
+            doReport();
+            return;
+
+        case 'c': //CLEAN
+            break;
+
+        case 'l': //SHOW
+            break;
+        case 'r': //REMOVE
+            break;
+
+        case '?':
+            if (optopt == 'q')
+                printf("set: argument for 'q' not found\n");
+            else if (optopt == 'p')
+                printf("set: argument for 'p' not found\n");
 
             break;
 

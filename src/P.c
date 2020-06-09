@@ -137,8 +137,6 @@ bool startQ(QData *qData, int i)
 
 bool resizeQ(int q)
 {
-    fprintf(stderr, "RESIZING from p to %d q\n", q);
-
     if (qDatasLen == q)
         return true;
 
