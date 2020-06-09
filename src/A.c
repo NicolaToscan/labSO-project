@@ -66,11 +66,10 @@ int main(int argc, char *argv[])
 
     if (!startC())
     {
-        fprintf(stderr, "Couldn't start anoter process, please try again later");
+        fprintf(stderr, "Couldn't start another process, please try again later\n");
         exit(ERR_FORK);
     }
 
-    logg("A started");
     while (true)
         readCommand();
     return 0;
@@ -425,6 +424,5 @@ void *readStuff()
 void quit()
 {
     sendKill(WRITE_C);
-    logg("A killed");
     exit(0);
 }

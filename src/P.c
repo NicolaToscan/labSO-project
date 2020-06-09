@@ -42,8 +42,6 @@ int main(int argc, char *argv[])
     else
         printFail(OUT);
 
-    logg("P started");
-
     while (true)
     {
         char cmd;
@@ -81,7 +79,6 @@ int main(int argc, char *argv[])
             //CLEAR LINE
         default:
             clearLine(IN);
-            logg("CMD NOT FOUND DA P");
             break;
         }
     }
@@ -92,7 +89,6 @@ int main(int argc, char *argv[])
 void quit()
 {
     resizeQ(0);
-    logg("P KILLED");
     exit(0);
 }
 

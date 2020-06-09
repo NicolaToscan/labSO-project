@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
     else
         printFail(OUT);
 
-    logg("C started");
 
     while (true)
     {
@@ -101,7 +100,6 @@ int main(int argc, char *argv[])
             //CLEAR LINE
         default:
             clearLine(IN);
-            logg("CMD NOT FOUND DA C");
             break;
         }
     }
@@ -112,7 +110,6 @@ int main(int argc, char *argv[])
 void quit()
 {
     resizeP(0);
-    logg("C KILLED");
     exit(0);
 }
 

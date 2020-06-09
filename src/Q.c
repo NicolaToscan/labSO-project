@@ -37,7 +37,6 @@ int main(int argc, char *argv[])
 		exit(ERR_INVALID_NR);
 	}
 
-	logg("Q started");
 	printSuccess(OUT);
 
 	while (true)
@@ -69,7 +68,6 @@ int main(int argc, char *argv[])
 			//CLEAR LINE
 		default:
 			clearLine(IN);
-			logg("CMD NOT FOUND DA Q");
 			break;
 		}
 	}
@@ -79,7 +77,6 @@ int main(int argc, char *argv[])
 
 void quit()
 {
-	logg("Q KILLED");
 	exit(0);
 }
 

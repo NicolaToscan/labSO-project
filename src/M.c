@@ -45,11 +45,7 @@ void sighandle_int(int sig)
 
 int main(int argc, char *argv[])
 {
-    char buf[MAX_CMD_LENGHT];
-    int aa = readlink("/proc/self/exe", buf, MAX_CMD_LENGHT);
-    printf("%s - %d\n", buf, aa);
     signal(SIGINT, sighandle_int);
-    logg("M started");
 
     if (argc > 1)
     {
@@ -655,6 +651,5 @@ void help()
 
 void quit()
 {
-    logg("M killed");
     exit(0);
 }

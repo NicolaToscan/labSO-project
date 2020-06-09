@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
         mkfifo(myfifo, 0666);
         READ_A = open(myfifo, O_RDONLY);
     }
-    logg("R started");
 
     pthread_t thredReaderA;
     pthread_create(&thredReaderA, NULL, readFromA, NULL);
@@ -113,7 +112,6 @@ int main(int argc, char *argv[])
             //CLEAR LINE
         default:
             clearLine(IN);
-            logg("CMD NOT FOUND DA R");
             break;
         }
     }
@@ -123,7 +121,6 @@ int main(int argc, char *argv[])
 
 void quit()
 {
-    logg("R KILLED");
     exit(0);
 }
 
@@ -238,7 +235,6 @@ void *readFromA()
             break;
 
         default:
-            logg("CMD NOT FOUND BY R thread");
             break;
         }
     }
