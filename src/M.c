@@ -282,7 +282,8 @@ bool setCmd(int argc, char *argv[], bool sendCmd)
     write(WRITE_A, cmd, strlen(cmd));
     if (readSimpleYNResponce(READ_A))
     {
-        printf("Values updated successfully\n");
+        if (pSet || qSet)
+            printf("Values updated successfully\n");
         return true;
     }
     else
@@ -494,7 +495,7 @@ void doReport()
 
 void handleArgs(int argc, char *argv[])
 {
-    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 ||  strcmp(argv[1], "-help") == 0)
+    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-help") == 0)
     {
         helpInline();
         exit(0);
