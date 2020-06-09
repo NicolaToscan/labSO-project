@@ -35,3 +35,4 @@ int isBracket(char c);
 int isSpace(char c);
 void printAnalysisReadable(Analysis a);
 void sumAnalysis(Analysis *res, Analysis a);
+void printAnalysisReport(const int fd, Analysis a);

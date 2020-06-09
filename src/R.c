@@ -136,7 +136,10 @@ void printReport()
         write(OUT, reportDatas[i].filename, strlen(reportDatas[i].filename));
         write(OUT, "\n", 1);
 
-        write(OUT, "Analysis: ", strlen("Analysis: "));
+        write(OUT, "Analysis:\n", strlen("Analysis:\n"));
+
+        printAnalysisReport(OUT, *(reportDatas[i].a));
+
         write(OUT, "\n", 1);
     }
     write(OUT, "\n", 1);

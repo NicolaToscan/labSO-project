@@ -384,7 +384,14 @@ void stampaReport()
     }
 
     cmd = readchar(READ_R); // READ \n
-    //TODO: copia incolla fino a \n e basta
+
+    char line[MAX_PATH_LENGHT];
+    int rd;
+    do
+    {
+        rd = readline(READ_R, line, MAX_PATH_LENGHT);
+        printf("%s\n", line);
+    } while (rd != 0);
 }
 
 bool handleBusyAndResponseReport()

@@ -109,9 +109,14 @@ void addCharAnalysis(Analysis *a, char c)
     }
 }
 
-void printAnalysisReadable(Analysis a)
+void printAnalysisReadable(const Analysis a)
 {
     fprintf(stderr, "%d - %d - %d - %d - %d - %d - %d - %d - %d - %d\n", (int)a.valid, (int)a.values[0], (int)a.values[1], (int)a.values[2], (int)a.values[3], (int)a.values[4], (int)a.values[5], (int)a.values[6], (int)a.values[7], (int)a.values[8]);
+}
+
+void printAnalysisReport(const int fd, Analysis a)
+{
+    write(fd, "CIAO\n", 5);
 }
 
 int isText(char c) { return (c >= ' ' && c <= '~') ? 1 : 0; }
