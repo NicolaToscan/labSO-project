@@ -7,15 +7,19 @@
 #include "common.h"
 #include "commands.h"
 
+void sendCharCommand(const int fd, char CMD)
+{
+    char cmds[2] = {CMD, '\n'};
+    write(fd, cmds, 2 * sizeof(char));
+}
+
 void printSuccess(const int fd)
 {
-    const char cmds[2] = {RESPONSE_OK, '\n'};
-    write(fd, cmds, 2 * sizeof(char));
+    sendCharCommand(fd, RESPONSE_OK);
 }
 void printFail(const int fd)
 {
-    const char cmds[2] = {RESPONSE_KO, '\n'};
-    write(fd, cmds, 2 * sizeof(char));
+    sendCharCommand(fd, RESPONSE_KO);
 }
 
 bool readSimpleYNResponce(const int fd)
@@ -33,8 +37,7 @@ bool readSimpleYNResponce(const int fd)
 
 void sendKill(const int fd)
 {
-    char cmd[2] = {CMD_KILL, '\n'};
-    write(fd, &cmd, 2 * sizeof(char));
+    sendCharCommand(fd, CMD_KILL);
 }
 
 void sendFilename(const int fd, char *filename, int len)
@@ -105,12 +108,10 @@ void readPandQ(const int fd, int *P, int *Q)
 
 void sendStart(const int fd)
 {
-    char cmds[2] = {CMD_START, '\n'};
-    write(fd, cmds, 2);
+    sendCharCommand(fd, CMD_START);
 }
 
 void sendFine(const int fd)
 {
-    char cmds[2] = {CMD_END, '\n'};
-    write(fd, cmds, 2);
+    sendCharCommand(fd, CMD_END);
 }

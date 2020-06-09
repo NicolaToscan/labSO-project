@@ -18,3 +18,4 @@ void sendPandQ(const int fd, const int P, const int Q);
 void readPandQ(const int fd, int *P, int *Q);
 void sendStart(const int fd);
 void sendFine(const int fd);
+void sendCharCommand(const int fd, char CMD);

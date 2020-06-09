@@ -99,8 +99,7 @@ void printReport()
         return;
     }
 
-    char cmds[2] = {CMD_REPORT, '\n'};
-    write(OUT, cmds, 2);
+    sendCharCommand(OUT, CMD_REPORT);
     int i;
     for (i = 0; i < reportDatasLen; i++)
     {

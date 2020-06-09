@@ -24,24 +24,6 @@ void loggC(char c)
 	fprintf(stderr, "\033[32;1m LOG: %c \033[0m\n", c);
 }
 
-// ----- SEND CMD -----
-void sendCommand(const int file, char *cmd)
-{
-	write(file, cmd, strlen(cmd));
-	write(file, "\n", strlen("\n"));
-}
-void sendIntCommand(const int file, const int cmd)
-{
-	char buff[11];
-	sprintf(buff, "%d\n", cmd);
-	write(file, buff, strlen(buff));
-}
-void sendCharCommand(const int file, const char cmd)
-{
-	char buff[3] = {cmd, '\n', '\0'};
-	write(file, buff, strlen(buff));
-}
-
 void clearLine(const int file)
 {
 	char c;
