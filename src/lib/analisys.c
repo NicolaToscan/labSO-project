@@ -180,7 +180,31 @@ int isText(char c) { return (c >= ' ' && c <= '~') ? 1 : 0; }
 int isUppLetter(char c) { return (c >= 'A' && c <= 'Z') ? 1 : 0; }
 int isLowLetter(char c) { return (c >= 'a' && c <= 'z') ? 1 : 0; }
 int isNumber(char c) { return (c >= '0' && c <= '9') ? 1 : 0; }
-int isMathSymbol(char c) { return (strstr("=<>+-*/", &c) != NULL) ? 1 : 0; }
-int isPunctuation(char c) { return (strstr(".,:;'!?`\"", &c) != NULL) ? 1 : 0; }
-int isBracket(char c) { return (strstr("()[]{}", &c) != NULL) ? 1 : 0; }
+int isMathSymbol(char c)
+{
+    char *str = "=<>+-*/";
+    int i; for(i = 0; i < 7; i++)
+    {
+        if(c == str[i]) return 1;
+    }
+    return 0;
+}
+int isPunctuation(char c)
+{ 
+    char *str = ".,:;'!?`\"";
+    int i; for(i = 0; i < 9; i++)
+    {
+        if(c == str[i]) return 1;
+    }
+    return 0;
+}
+int isBracket(char c)
+{
+    char *str = "()[]{}";
+    int i; for(i = 0; i < 6; i++)
+    {
+        if(c == str[i]) return 1;
+    }
+    return 0;
+}
 int isSpace(char c) { return (c == ' ') ? 1 : 0; }
