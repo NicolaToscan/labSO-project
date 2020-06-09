@@ -121,7 +121,56 @@ void printAnalysisReadable(const Analysis a)
 
 void printAnalysisReport(const int fd, Analysis a)
 {
-    write(fd, "CIAO\n", 5);
+    int upperLetter = a.values[AN_UPPLT];
+    int lowerLetter = a.values[AN_LOWLT];
+    int number = a.values[AN_NUMBR];
+    int mathSymbols = a.values[AN_MATHS];
+    int punctuation = a.values[AN_PUNCT];
+    int brackets = a.values[AN_BRCKT];
+    int space = a.values[AN_SPACE];
+    int text = a.values[AN_OTEXT];
+    int other = a.values[AN_OTHER];
+
+    char line[MAX_CMD_LENGHT];
+
+    if (a.valid)
+    {
+
+        sprintf(line, "the total number of character are  %d \n", upperLetter + lowerLetter + number + mathSymbols + punctuation + brackets + space + text + other);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "the number of uppercase letters is  %d \n", upperLetter);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "the number of lowercase letters is %d \n", lowerLetter);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "the number of numbers is %d \n", number);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "the number of math character is %d \n", mathSymbols);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "the number of punctuation symbols is %d \n", punctuation);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "the number of brackets is %d \n", brackets);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "the number of spaces is %d \n", space);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "other characters( & $ @ _ ^ | #) : %d \n", text);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "other like \\n etc %d \n", other);
+        write(fd, line, strlen(line));
+    }
+    else
+    {
+        strcpy(line, "Errore di lettura del file\n");
+        write(fd, line, strlen(line));
+    }
 }
 
 int isText(char c) { return (c >= ' ' && c <= '~') ? 1 : 0; }
