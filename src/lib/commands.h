@@ -14,3 +14,6 @@
 
 #define CMD_REQUEST_REPORT 'T'
 #define CMD_REMOVE_FILE 'R'
+
+#define CMD_BUSY 'B'
+#define CMD_REPORT 'B'
