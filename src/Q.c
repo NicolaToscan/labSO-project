@@ -77,10 +77,6 @@ int main(int argc, char *argv[])
 void readNumbers()
 {
 	readQnumbers(IN, &mySection, &totSections);
-	if (mySection <= 0 || totSections <= 0)
-	{
-		//TODO: oh no
-	}
 	clearLine(IN);
 }
 

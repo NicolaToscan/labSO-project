@@ -22,7 +22,7 @@ OUTS = $(addprefix $(BIN_DIR)/, $(addsuffix .out, $(PRJCTS)))
 
 ####
 
-all: $(OUTS)
+build: $(OUTS)
 
 ####
 
@@ -107,8 +107,8 @@ force:
 # Help
 .PHONY: help
 help:
-	@echo Use make to create makefile
-	@echo Use make -s to create makefile hiding commands
+	@echo Use make build to create makefile
+	@echo Use make build -s to create makefile hiding commands
 	@echo Use make clean to delete object files
 	@echo Use make force to re-build everything
 
