@@ -206,6 +206,8 @@ bool updatePandQ()
 {
     int p, q;
     readPandQ(IN, &p, &q);
+    if (p == P && q == Q)
+        return true;
 
     int toUpdate = (p < pDatasLen) ? p : pDatasLen;
     int i = 0;

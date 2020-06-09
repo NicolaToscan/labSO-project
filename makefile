@@ -8,7 +8,7 @@ LIB_DIR = src/lib
 BIN_DIR = bin
 
 PRJCTS = M A R C P Q
-LIBS = analisys commands common communication filemanager
+LIBS = analisys commands common communication
 
 ####
 
@@ -86,10 +86,6 @@ bin/common.o: src/lib/common.c
 	$(CC) $(STANDARD) -c $^ -o $@
 
 bin/communication.o: src/lib/communication.c
-	@mkdir -p bin
-	$(CC) $(STANDARD) -c $^ -o $@
-
-bin/filemanager.o: src/lib/filemanager.c
 	@mkdir -p bin
 	$(CC) $(STANDARD) -c $^ -o $@
 

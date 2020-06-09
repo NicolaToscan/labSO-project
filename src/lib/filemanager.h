@@ -1,1 +1,0 @@
-pair getFileRange(uint32 fileLength, int part, int totParts);

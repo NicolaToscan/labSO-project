@@ -5,7 +5,6 @@
 #include <string.h>
 #include "common.h"
 #include "analisys.h"
-#include "filemanager.h"
 
 Analysis initAnalysis()
 {
@@ -20,35 +19,41 @@ Analysis initAnalysis()
     return a;
 }
 
+void getFileRange(int len, int i, int n, int *start, int *toRead)
+{
+    int section = len / n;
+    *start = (i * section);
+    *toRead = section;
+    if (i + 1 == n)
+        *toRead += len % n;
+}
+
 Analysis analyseFile(char *fileName, int mySection, int totSections)
 {
-    FILE *file;
-    file = fopen(fileName, "r");
+    int fd = open(fileName, O_RDONLY);
 
     Analysis a = initAnalysis();
 
-    if (file <= 0)
+    if (fd <= 0)
     {
         a.valid = false;
         return a;
     }
 
-    // TODO: ATTENZIONE POSSIBILE CASINO
-    // FORSE VA RIDOTTA LA LENGTH PER TOGLIERE IL CHAR EOF
-
-    fseek(file, 0, SEEK_END);
-    int fileLength = ftell(file);
-    pair part = getFileRange(fileLength, mySection, totSections);
-    int howmany = part.second - part.first + 1;
-
-    fseek(file, 0, part.first);
+    int size = lseek(fd, 0, SEEK_END);
+    int start;
+    int toRead;
+    getFileRange(size, mySection - 1, totSections, &start, &toRead);
+    lseek(fd, start, 0);
     int i = 0;
-    while (i < howmany)
+    while (i < toRead)
     {
-        addCharAnalysis(&a, (char)fgetc(file));
+        char cc;
+        read(fd, &cc, 1);
+        addCharAnalysis(&a, cc);
         i++;
     }
-    fclose(file);
+    close(fd);
 
     return a;
 }

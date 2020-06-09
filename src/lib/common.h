@@ -20,8 +20,6 @@
 #define ERR_PIPE 3
 #define ERR_INVALID_NR 4
 
-typedef unsigned long uint32;
-typedef unsigned long long uint64;
 
 typedef enum
 {
@@ -31,8 +29,8 @@ typedef enum
 
 typedef struct pair_p
 {
-    uint32 first;
-    uint32 second;
+    int first;
+    int second;
 } pair;
 
 void error(char msg[]);

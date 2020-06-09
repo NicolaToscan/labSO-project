@@ -139,7 +139,6 @@ void printReport()
 
     sendCharCommand(OUT, CMD_REPORT);
     int i;
-    loggN(reportDatasLen);
     for (i = 0; i < reportDatasLen; i++)
     {
         write(OUT, "File:\n", strlen("File:\n"));
@@ -204,7 +203,6 @@ void *readFromA()
 
 void addFile(char *file, int fileLen, Analysis an)
 {
-    error(file);
     int found = -1;
     int i;
     for (i = 0; i < reportDatasLen; i++)

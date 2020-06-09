@@ -186,11 +186,13 @@ bool resizeQ(int q)
 bool updateQnumbers()
 {
     int q = readPQs(IN);
+    if (Q == q)
+        return true;
 
     int toUpdate = (q < qDatasLen) ? q : qDatasLen;
     int i = 0;
     for (i = 0; i < toUpdate; i++)
-        sendQnumbers(qDatas[i].write, i, q);
+        sendQnumbers(qDatas[i].write, i + 1, q);
 
     if (resizeQ(q))
     {
