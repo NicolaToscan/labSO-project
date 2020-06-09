@@ -32,6 +32,7 @@ void help(int argc, char *argv[]);
 bool forwardFile(char type, char *filename);
 void doReport();
 void reportCmd(int argc, char *argv[]);
+bool handleBusyAndResponseReport();
 
 int main(int argc, char *argv[])
 {
@@ -340,6 +341,8 @@ void reportCmd(int argc, char *argv[])
             return;
 
         case 'c': //CLEAN
+            sendCharCommand(WRITE_R, CMD_CLEAN);
+            handleBusyAndResponseReport();
             break;
 
         case 'l': //SHOW
@@ -348,16 +351,31 @@ void reportCmd(int argc, char *argv[])
             break;
 
         case '?':
-            if (optopt == 'q')
-                printf("set: argument for 'q' not found\n");
-            else if (optopt == 'p')
-                printf("set: argument for 'p' not found\n");
+            if (optopt == 'r')
+                printf("set: argument for 'r' not found\n");
 
             break;
 
         default:
             break;
         }
+    }
+}
+
+bool handleBusyAndResponseReport()
+{
+    char cmd = readchar(READ_R);
+    if (cmd == CMD_BUSY)
+    {
+        char nFile[12];
+        readline(READ_R, nFile, 12);
+        printf("Report is still working, %s files done\n", nFile);
+        return true;
+    }
+    else
+    {
+        clearLine(READ_R);
+        return cmd == RESPONSE_OK ? true : false;
     }
 }
 

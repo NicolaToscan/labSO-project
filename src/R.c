@@ -30,7 +30,7 @@ int *analysis_elems;
 int *deleted;
 
 int READ_A = 0;
-bool readingFromA = false;
+bool readingFromA = true;
 int fileDone = 0;
 
 void doReadAnalysis();
@@ -40,6 +40,7 @@ void *readFromA();
 void returnBusy();
 void addFile(char *file, int fileLen, Analysis an);
 void removeFile();
+void clean();
 
 int main(int argc, char *argv[])
 {
@@ -73,6 +74,11 @@ int main(int argc, char *argv[])
             clearLine(IN);
             break;
 
+        case CMD_CLEAN:
+            clean();
+            clearLine(IN);
+            break;
+
             //KILL
         case CMD_KILL:
             clearLine(IN);
@@ -89,6 +95,27 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+void clean()
+{
+    if (readingFromA)
+    {
+        returnBusy();
+        return;
+    }
+
+    int i;
+    for (i = 0; i < reportDatasLen; i++)
+    {
+        free(reportDatas[i].a);
+        free(reportDatas[i].filename);
+    }
+
+    free(reportDatas);
+    reportDatasLen = 0;
+    printSuccess(OUT);
+    error("CLEANED");
 }
 
 void printReport()
@@ -232,5 +259,4 @@ void removeFile()
     reportDatas = (ReportData *)realloc(reportDatas, (reportDatasLen - 1) * (sizeof(ReportData)));
     reportDatasLen--;
     printSuccess(OUT);
-
 }
