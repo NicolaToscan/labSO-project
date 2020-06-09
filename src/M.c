@@ -347,6 +347,7 @@ void reportCmd(int argc, char *argv[])
             break;
 
         case 'l': //SHOW
+                  //TODO: questo servirebbe farlo
             break;
 
         case 'r': //REMOVE
@@ -405,7 +406,8 @@ bool removeFileFromReport(char *filename)
     {
         clearLine(READ_R);
         return true;
-    }}
+    }
+}
 
 bool forwardFile(char type, char *filename)
 {

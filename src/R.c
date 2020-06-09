@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         {
             // REMOVE FILE
         case CMD_REMOVE_FILE:
-        logg("REMOVING");
+            logg("REMOVING");
             removeFile();
             break;
 
