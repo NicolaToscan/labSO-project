@@ -37,9 +37,9 @@ void doReadAnalysis();
 void deleteFile();
 void printReport();
 void *readFromA();
-
+void returnBusy();
 void addFile(char *file, int fileLen, Analysis an);
-void removeFile(char *file);
+void removeFile();
 
 int main(int argc, char *argv[])
 {
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         {
             // REMOVE FILE
         case CMD_REMOVE_FILE:
-            deleteFile();
+            removeFile();
             break;
 
             //REPORT
@@ -95,24 +95,30 @@ void printReport()
 {
     if (readingFromA)
     {
-        char outStr[512];
-        sprintf(outStr, "Report not finished, %d file analysed\n", fileDone);
-        write(OUT, outStr, strlen(outStr));
+        returnBusy();
+        return;
     }
-    else
-    {
-        int i;
-        for (i = 0; i < reportDatasLen; i++)
-        {
-            write(OUT, "File:\n", strlen("File:\n"));
-            write(OUT, reportDatas[i].filename, strlen(reportDatas[i].filename));
-            write(OUT, "\n", 1);
 
-            write(OUT, "Analysis: ", strlen("Analysis: "));
-            write(OUT, "\n", 1);
-        }
+    char cmds[2] = {CMD_REPORT, '\n'};
+    write(OUT, cmds, 2);
+    int i;
+    for (i = 0; i < reportDatasLen; i++)
+    {
+        write(OUT, "File:\n", strlen("File:\n"));
+        write(OUT, reportDatas[i].filename, strlen(reportDatas[i].filename));
+        write(OUT, "\n", 1);
+
+        write(OUT, "Analysis: ", strlen("Analysis: "));
+        write(OUT, "\n", 1);
     }
     write(OUT, "\n", 1);
+}
+
+void returnBusy()
+{
+    char outStr[12];
+    sprintf(outStr, "%c%d\n", CMD_BUSY, fileDone);
+    write(OUT, outStr, strlen(outStr));
 }
 
 void *readFromA()
@@ -188,8 +194,17 @@ void addFile(char *file, int fileLen, Analysis an)
     toUpdate->filename[fileLen] = '\0';
 }
 
-void removeFile(char *file)
+void removeFile()
 {
+    char file[MAX_PATH_LENGHT];
+    int fileLen = readFilename(IN, file);
+
+    if (readingFromA)
+    {
+        returnBusy();
+        return;
+    }
+
     int found = -1;
     int i;
     for (i = 0; i < reportDatasLen; i++)
@@ -202,7 +217,10 @@ void removeFile(char *file)
     }
 
     if (found < 0)
+    {
+        printFail(OUT);
         return;
+    }
 
     free(reportDatas[found].a);
     free(reportDatas[found].filename);
@@ -214,4 +232,6 @@ void removeFile(char *file)
 
     reportDatas = (ReportData *)realloc(reportDatas, (reportDatasLen - 1) * (sizeof(ReportData)));
     reportDatasLen--;
+    printSuccess(OUT);
+
 }
