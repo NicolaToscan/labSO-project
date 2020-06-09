@@ -135,39 +135,53 @@ void printAnalysisReport(const int fd, Analysis a)
 
     if (a.valid)
     {
+        sprintf(line, "Total characters:\t%d \n", upperLetter + lowerLetter + number + mathSymbols + punctuation + brackets + space + text + other);
+        write(fd, line, strlen(line));
+        
+        write(fd, " \n", strlen(" \n"));
 
-        sprintf(line, "the total number of character are\t%d \n", upperLetter + lowerLetter + number + mathSymbols + punctuation + brackets + space + text + other);
+        sprintf(line, "Uppercase letters:\t%d \n", upperLetter);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of uppercase letters is\t%d \n", upperLetter);
+        sprintf(line, "Lowercase letters:\t%d \n", lowerLetter);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of lowercase letters is\t%d \n", lowerLetter);
+        sprintf(line, "Math character:\t\t%d \n", mathSymbols);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of numbers is\t\t%d \n", number);
+        sprintf(line, "Punctuation symbols:\t%d \n", punctuation);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of math character is\t\t%d \n", mathSymbols);
+        sprintf(line, "Brackets:\t\t%d \n", brackets);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of punctuation symbols is\t%d \n", punctuation);
+        sprintf(line, "Spaces:\t\t\t%d \n", space);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of brackets is\t\t%d \n", brackets);
+        sprintf(line, "Symbles:\t\t%d \n", text);
         write(fd, line, strlen(line));
 
-        sprintf(line, "the number of spaces is\t\t\t%d \n", space);
+        sprintf(line, "Others:\t\t\t%d \n", other);
         write(fd, line, strlen(line));
 
-        sprintf(line, "other characters( & $ @ _ ^ | #) :\t%d \n", text);
+        write(fd, " \n", strlen(" \n"));
+
+        sprintf(line, "All letters:\t\t%d \n", upperLetter + lowerLetter);
         write(fd, line, strlen(line));
 
-        sprintf(line, "other like \\n etc\t\t\t%d \n", other);
+        sprintf(line, "Numbers:\t\t%d \n", number);
         write(fd, line, strlen(line));
 
-        sprintf(line, "-----------------------------------------------\n");
+        sprintf(line, "Alphanumerics:\t\t%d \n", upperLetter + lowerLetter + number);
         write(fd, line, strlen(line));
+
+        sprintf(line, "Not Alphanumerics:\t%d \n", mathSymbols + punctuation + brackets + space + text + other);
+        write(fd, line, strlen(line));
+
+        sprintf(line, "----------------------------------------\n");
+        write(fd, line, strlen(line));
+        write(fd, " \n", strlen(" \n"));
+
     }
     else
     {
@@ -183,27 +197,33 @@ int isNumber(char c) { return (c >= '0' && c <= '9') ? 1 : 0; }
 int isMathSymbol(char c)
 {
     char *str = "=<>+-*/";
-    int i; for(i = 0; i < 7; i++)
+    int i;
+    for (i = 0; i < 7; i++)
     {
-        if(c == str[i]) return 1;
+        if (c == str[i])
+            return 1;
     }
     return 0;
 }
 int isPunctuation(char c)
-{ 
+{
     char *str = ".,:;'!?`\"";
-    int i; for(i = 0; i < 9; i++)
+    int i;
+    for (i = 0; i < 9; i++)
     {
-        if(c == str[i]) return 1;
+        if (c == str[i])
+            return 1;
     }
     return 0;
 }
 int isBracket(char c)
 {
     char *str = "()[]{}";
-    int i; for(i = 0; i < 6; i++)
+    int i;
+    for (i = 0; i < 6; i++)
     {
-        if(c == str[i]) return 1;
+        if (c == str[i])
+            return 1;
     }
     return 0;
 }
