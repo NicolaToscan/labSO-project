@@ -28,7 +28,8 @@ void readCommand();
 void file(int argc, char *argv[]);
 bool setCmd(int argc, char *argv[], bool sendCmd);
 void quit();
-void help(int argc, char *argv[]);
+void help();
+void helpInline();
 bool forwardFile(char type, char *filename);
 void doReport();
 void reportCmd(int argc, char *argv[]);
@@ -201,7 +202,7 @@ void readCommand()
         }
         else if (strcmp(cmds[0], "help") == 0)
         {
-            help(num, cmds);
+            help();
         }
         else if (strcmp(cmds[0], "q") == 0 || strcmp(cmds[0], "quit") == 0 || strcmp(cmds[0], "exit") == 0)
         {
@@ -486,6 +487,11 @@ void doReport()
 
 void handleArgs(int argc, char *argv[])
 {
+    if (strcmp(argv[1], "-h") || strcmp(argv[1], "--help") ||  strcmp(argv[1], "-help"))
+    {
+        helpInline();
+        exit(0);
+    }
 
     bool err = false;
 
@@ -575,17 +581,27 @@ void handleArgs(int argc, char *argv[])
 
 // Other
 
-void help(int argc, char *argv[])
+void helpInline()
+{
+    printf("usage: M.out [-p <number>] [-q <number>] [-f <filename1> <filename2> ...] \n");
+    printf("   options:\n");
+    printf("     -p edit the number of P \n");
+    printf("     -q edit the number of Q \n");
+    printf("     -f list of file and directory to report \n");
+    printf("\n");
+}
+
+void help()
 {
     printf("\n");
-    printf("set -p <number> -q <number> \n");
+    printf("set [-p <number>] [-q <number>] \n");
     printf("   set the number of Ps and Qs \n");
     printf("   options:\n");
     printf("     -p edit the number of P \n");
     printf("     -q edit the number of Q \n");
     printf("\n");
 
-    printf("file -a <filename1> <filename2> ... -r <filename1> <filename2> ... \n");
+    printf("file [-a <filename1> <filename2> ...] [-r <filename1> <filename2> ...] \n");
     printf("   add and remove files and directory for new report \n");
     printf("   options:\n");
     printf("     -a list of filenames to add \n");
