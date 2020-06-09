@@ -17,14 +17,10 @@ typedef struct Analysis_s
 } Analysis;
 
 Analysis initAnalysis();
-
 Analysis analyseFile(char *fileName, int mySection, int totSections);
-
 void printAnalysis(const int file, Analysis a);
 Analysis readAnalysis(const int file);
-
 void addCharAnalysis(Analysis *a, char c);
-
 int isText(char c);
 int isUppLetter(char c);
 int isLowLetter(char c);
