@@ -20,8 +20,8 @@ int WRITE_R = 0;
 int READ_R = 0;
 int PID_R = 0;
 
-int P = 3;
-int Q = 4;
+int P = DEFAULT_P;
+int Q = DEFAULT_Q;
 
 void startAandR();
 void readCommand();

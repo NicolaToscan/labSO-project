@@ -14,6 +14,9 @@
 #define WRITE 1
 #define READ 0
 
+#define DEFAULT_P 3
+#define DEFAULT_Q 4
+
 // ERRORS
 #define ERR_FORK 1
 #define ERR_EXEC 2

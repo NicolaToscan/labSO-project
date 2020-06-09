@@ -26,8 +26,8 @@ bool forwardFile();
 bool updatePandQ();
 void *forwardUpReports();
 
-int P = 3;
-int Q = 4;
+int P = DEFAULT_P;
+int Q = DEFAULT_Q;
 PData *pDatas = NULL;
 int pDatasLen = 0;
 int pRotation = 0;
@@ -41,9 +41,9 @@ int main(int argc, char *argv[])
         Q = atoi(argv[2]);
 
     if (P <= 0)
-        P = 3;
+        P = DEFAULT_P;
     if (Q <= 0)
-        Q = 4;
+        Q = DEFAULT_Q;
 
     if (resizeP(P))
         printSuccess(OUT);
@@ -110,11 +110,17 @@ int main(int argc, char *argv[])
 bool startP(PData *pData, int i)
 {
     int fdDOWN[2];
-    pipe(fdDOWN);
+    if (pipe(fdDOWN) == -1)
+        return false;
     pData->write = fdDOWN[WRITE];
 
     int fdUP[2];
-    pipe(fdUP);
+    if (pipe(fdUP) == -1)
+    {
+        close(fdDOWN[WRITE]);
+        close(fdDOWN[READ]);
+        return false;
+    }
     pData->read = fdUP[READ];
 
     pid_t pid = fork();

@@ -25,7 +25,7 @@ bool updateQnumbers();
 void killQ(QData q, int i);
 bool forwardFile();
 
-int Q = 4;
+int Q = DEFAULT_Q;
 QData *qDatas = NULL;
 int qDatasLen = 0;
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     if (argc >= 2)
         Q = atoi(argv[1]);
     if (Q <= 0)
-        Q = 4;
+        Q = DEFAULT_Q;
 
     if (resizeQ(Q))
         printSuccess(OUT);
@@ -92,11 +92,17 @@ int main(int argc, char *argv[])
 bool startQ(QData *qData, int i)
 {
     int fdDOWN[2];
-    pipe(fdDOWN);
+    if (pipe(fdDOWN) == -1)
+        return false;
     qData->write = fdDOWN[WRITE];
 
     int fdUP[2];
-    pipe(fdUP);
+    if (pipe(fdUP) == -1)
+    {
+        close(fdDOWN[WRITE]);
+        close(fdDOWN[READ]);
+        return false;
+    }
     qData->read = fdUP[READ];
 
     pid_t pid = fork();

@@ -16,8 +16,8 @@
 char **filenames;
 int filenamesLen = 0;
 
-int P = 3;
-int Q = 4;
+int P = DEFAULT_P;
+int Q = DEFAULT_Q;
 
 int WRITE_C = 0;
 int READ_C = 0;
@@ -60,9 +60,9 @@ int main(int argc, char *argv[])
         Q = atoi(argv[3]);
 
     if (P <= 0)
-        P = 3;
+        P = DEFAULT_P;
     if (Q <= 0)
-        Q = 4;
+        Q = DEFAULT_Q;
 
     if (!startC())
     {
