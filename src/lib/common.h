@@ -17,7 +17,8 @@
 // ERRORS
 #define ERR_FORK 1
 #define ERR_EXEC 2
-#define ERR_INVALID_NR 3
+#define ERR_PIPE 3
+#define ERR_INVALID_NR 4
 
 typedef unsigned long uint32;
 typedef unsigned long long uint64;

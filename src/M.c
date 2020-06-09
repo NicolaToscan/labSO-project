@@ -23,7 +23,7 @@ int PID_R = 0;
 int P = 3;
 int Q = 4;
 
-bool startAandR();
+void startAandR();
 void readCommand();
 void file(int argc, char *argv[]);
 void setCmd(int argc, char *argv[]);
@@ -38,8 +38,8 @@ void stampaReport();
 
 int main(int argc, char *argv[])
 {
-    logg("M started");
     startAandR();
+    logg("M started");
 
     while (true)
     {
@@ -50,17 +50,24 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-bool startAandR()
+void startAandR()
 {
     int pipeAR[2];
-    pipe(pipeAR);
+    if (pipe(pipeAR) == -1)
+    {
+        error("Error opening pipe");
+        exit(ERR_PIPE);
+    }
 
     int fdDOWN[2];
     int fdUP[2];
 
     // A
-    pipe(fdDOWN);
-    pipe(fdUP);
+    if (pipe(fdDOWN) == -1 || pipe(fdUP) == -1)
+    {
+        error("Error opening pipe");
+        exit(ERR_PIPE);
+    }
 
     WRITE_A = fdDOWN[WRITE];
     READ_A = fdUP[READ];
@@ -90,7 +97,7 @@ bool startAandR()
     else if (pidA < 0)
     {
         forkErrorHandle(fdDOWN[READ], fdDOWN[WRITE], fdUP[READ], fdUP[WRITE]);
-        return false;
+        exit(ERR_FORK);
     }
     close(pipeAR[WRITE]);
 
@@ -99,8 +106,11 @@ bool startAandR()
     close(fdUP[WRITE]);
 
     // R
-    pipe(fdDOWN);
-    pipe(fdUP);
+    if (pipe(fdDOWN) == -1 || pipe(fdUP) == -1)
+    {
+        error("Error opening pipe");
+        exit(ERR_PIPE);
+    }
 
     WRITE_R = fdDOWN[WRITE];
     READ_R = fdUP[READ];
@@ -129,7 +139,7 @@ bool startAandR()
     else if (pidR < 0)
     {
         forkErrorHandle(fdDOWN[READ], fdDOWN[WRITE], fdUP[READ], fdUP[WRITE]);
-        return false;
+        exit(ERR_FORK);
     }
     close(pipeAR[READ]);
 
@@ -152,15 +162,10 @@ void readCommand()
     while (p)
     {
         cmds = realloc(cmds, sizeof(char *) * ++num);
-        if (cmds == NULL)
-        {
-            //TODO: MERDA
-            exit(0);
-        }
         cmds[num - 1] = p;
         p = strtok(NULL, " ");
     }
-    optind = 1; //RESET COSO CHE LETTE OPTs
+    optind = 1;
     if (num > 0)
     {
         if (strcmp(cmds[0], "set") == 0)
@@ -179,7 +184,7 @@ void readCommand()
         {
             help(num, cmds);
         }
-        else if (strcmp(cmds[0], "quit") == 0 || strcmp(cmds[0], "q") == 0)
+        else if (strcmp(cmds[0], "q") == 0 || strcmp(cmds[0], "quit") == 0 || strcmp(cmds[0], "exit") == 0)
         {
             sendKill(WRITE_A);
             sendKill(WRITE_R);
@@ -194,6 +199,9 @@ void readCommand()
     free(inLine);
     free(cmds);
 }
+
+
+// P and Q set
 
 void setCmd(int argc, char *argv[])
 {
@@ -230,7 +238,7 @@ void setCmd(int argc, char *argv[])
     if (pSet)
     {
         if (p <= 0)
-            printf("set: argument for 'n' not valid\n");
+            printf("set: argument for 'p' not valid\n");
         else
             P = p;
     }
@@ -238,7 +246,7 @@ void setCmd(int argc, char *argv[])
     if (qSet)
     {
         if (q <= 0)
-            printf("set: argument for 'm' not valid\n");
+            printf("set: argument for 'q' not valid\n");
         else
             Q = q;
     }
@@ -252,10 +260,12 @@ void setCmd(int argc, char *argv[])
         printf("Couldn't update values\n");
 }
 
+// FILE handler
+
 void file(int argc, char *argv[])
 {
     char c;
-    while ((c = getopt(argc, argv, "la:r:u:")) != -1)
+    while ((c = getopt(argc, argv, "la:r:")) != -1)
     {
         switch (c)
         {
@@ -263,66 +273,33 @@ void file(int argc, char *argv[])
         case 'a':
             optind--;
             for (; optind < argc && *argv[optind] != '-'; optind++)
-            {
                 forwardFile('A', argv[optind]);
-            }
             break;
 
             //REMOVE FILE
         case 'r':
             optind--;
             for (; optind < argc && *argv[optind] != '-'; optind++)
-            {
                 forwardFile('R', argv[optind]);
-            }
-            break;
-
-            //RECHECK FILE
-        case 'u':
-            optind--;
-            for (; optind < argc && *argv[optind] != '-'; optind++)
-            {
-                forwardFile('U', argv[optind]);
-            }
             break;
 
             //LIST
         case 'l':
             write(WRITE_A, "L\n", 2);
-            int letti;
-            char buff[64];
-            int lastChar = '\0';
-            while ((letti = read(READ_A, buff, 64)) > 0)
+            char line[MAX_PATH_LENGHT];
+            int rd;
+            do
             {
-                lastChar = buff[letti - 1];
-                if (letti != 64)
-                    buff[letti] = '\0';
-
-                printf("%s", buff);
-
-                if (letti > 2) // TODO: sistema sta merda
-                {
-                    if (buff[letti - 1] == '\n' && buff[letti - 2] == '\n')
-                        break;
-                }
-                else if (letti == 1)
-                {
-                    if (buff[letti - 1] == '\n' && lastChar == '\n')
-                        break;
-                }
-                else
-                    break;
-            }
+                rd = readline(READ_A, line, MAX_PATH_LENGHT);
+                printf("%s\n", line);
+            } while (rd != 0);
             break;
 
         case '?':
             if (optopt == 'a')
-                printf("set: argument for 'm' not found\n");
+                printf("set: argument for 'a' not found\n");
             else if (optopt == 'r')
-                printf("set: argument for 'n' not found\n");
-            else if (optopt == 'w')
-                printf("set: argument for 'u' not found\n");
-
+                printf("set: argument for 'r' not found\n");
             break;
 
         default:
@@ -330,6 +307,21 @@ void file(int argc, char *argv[])
         }
     }
 }
+
+bool forwardFile(char type, char *filename)
+{
+    char cmd[2] = {type, ' '};
+    write(WRITE_A, cmd, 2);
+    write(WRITE_A, filename, strlen(filename));
+    write(WRITE_A, "\n", 1);
+
+    bool res = readSimpleYNResponce(READ_A);
+    if (!res)
+        printf("File or directory '%s' not found\n", filename);
+    return res;
+}
+
+// REPORT cmdsd
 
 void reportCmd(int argc, char *argv[])
 {
@@ -433,27 +425,16 @@ bool removeFileFromReport(char *filename)
     }
 }
 
-bool forwardFile(char type, char *filename)
-{
-    char cmd[2] = {type, ' '};
-    write(WRITE_A, cmd, 2);
-    write(WRITE_A, filename, strlen(filename));
-    write(WRITE_A, "\n", 1);
-
-    bool res = readSimpleYNResponce(READ_A);
-    if (!res)
-        printf("File or directory '%s' not found\n", filename);
-    return res;
-}
-
 void doReport()
 {
     write(WRITE_A, "S\n", strlen("S\n"));
     if (readSimpleYNResponce(READ_A))
         printf("Report started in background\n");
     else
-        printf("Impossibile avviare il report\n");
+        printf("Couldn't start report\n");
 }
+
+// Other
 
 void help(int argc, char *argv[])
 {
